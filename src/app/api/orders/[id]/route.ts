@@ -1,0 +1,39 @@
+import { db, isConfigured } from "@/lib/supabase";
+import { fail, json } from "@/lib/api";
+import { processPayment } from "@/lib/mercadopago";
+
+export const dynamic = "force-dynamic";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  if (!isConfigured()) return fail("La base de datos todavía no está configurada.", 503);
+  const { id } = await ctx.params;
+  if (!UUID.test(id)) return fail("Pedido inválido.", 404);
+
+  const read = () =>
+    db().from("orders").select("id,status,ticket_codes,total,buyer_name,mp_payment_id").eq("id", id).maybeSingle();
+
+  let { data: order, error } = await read();
+  if (error) return fail(error.message, 500);
+  if (!order) return fail("Pedido no encontrado.", 404);
+
+  // Si el webhook todavía no llegó, consultamos el pago directamente.
+  const paymentId = new URL(req.url).searchParams.get("payment_id");
+  if (order.status === "pending" && paymentId && /^\d+$/.test(paymentId)) {
+    try {
+      await processPayment(paymentId);
+      ({ data: order } = await read());
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  if (!order) return fail("Pedido no encontrado.", 404);
+
+  return json({
+    status: order.status,
+    codes: order.ticket_codes,
+    total: order.total,
+    firstName: String(order.buyer_name).split(" ")[0],
+  });
+}
