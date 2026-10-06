@@ -15,13 +15,17 @@ Web para vender 6.000 cartones de bingo español (A-0001 a A-6000) para el sorte
 - **Precios**: $6.500 individual, combo de 3 por $15.000, calculado automáticamente.
 - **Mercado Pago Checkout Pro** con confirmación automática por webhook (con
   verificación de firma) y verificación de respaldo al volver del pago.
+- **Cartón descargable**: al pagar, el comprador ve sus cartones y los descarga como
+  imagen (o los comparte por WhatsApp). También quedan en **Mis cartones**.
 - **Panel `/admin`** con contraseña: recaudación, vendidos, disponibles, reservados,
-  lista de compras y exportación a Excel (CSV).
+  lista de compras, exportación a Excel (CSV) y botón **Preparar la web** que crea las
+  tablas y los cartones.
 
 ## Técnico
 
 - Next.js (App Router) + TypeScript, desplegado en Vercel.
-- Supabase (Postgres): esquema y funciones en [`supabase/schema.sql`](supabase/schema.sql).
+- Supabase (Postgres), conectado desde el Marketplace de Vercel: esquema y funciones en
+  [`supabase/schema.sql`](supabase/schema.sql), que el panel ejecuta solo vía `POSTGRES_URL`.
   Todo el acceso es desde el servidor con la clave secreta; RLS activado sin políticas públicas.
 - Reservas vencidas: se tratan como disponibles en todas las consultas y además una
   tarea `pg_cron` las limpia cada minuto.

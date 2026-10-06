@@ -17,7 +17,7 @@ const PASOS = [
   { n: "I", t: "Elegí tu cartón", d: "Mirá la lista, buscá un número puntual o dejá que encontremos cartones con tus números favoritos." },
   { n: "II", t: "Lo reservamos", d: "Al elegirlo queda reservado a tu nombre por 15 minutos: nadie más puede comprarlo." },
   { n: "III", t: "Pagás seguro", d: "Completás tus datos y pagás con Mercado Pago: tarjeta, débito o dinero en cuenta." },
-  { n: "IV", t: "¡Ya participás!", d: "Apenas se acredita el pago, el cartón es tuyo. Guardá el número para seguir el sorteo." },
+  { n: "IV", t: "¡Ya participás!", d: "Apenas se acredita el pago, el cartón es tuyo y lo descargás como imagen en tu celular." },
 ];
 
 export default async function Home() {
@@ -120,7 +120,7 @@ export default async function Home() {
             <div className="notice setup-warning">
               <strong>La web todavía no está conectada a la base de datos.</strong>
               <br />
-              Seguí la guía (archivo GUIA.md) para cargar las variables de Supabase en Vercel.
+              Seguí la guía (archivo GUIA.md): en Vercel, Storage → Supabase.
             </div>
           )}
         </div>
@@ -176,8 +176,9 @@ export default async function Home() {
             <details>
               <summary>¿Cómo sé que mi cartón quedó comprado?</summary>
               <p>
-                Al terminar el pago vas a ver la confirmación con tus números de cartón, y Mercado Pago te envía el
-                comprobante por email. Guardá tus números de cartón.
+                Al terminar el pago vas a ver tus cartones y un botón para descargarlos como imagen en tu celular.
+                Además Mercado Pago te envía el comprobante por email. Podés volver a verlos cuando quieras en{" "}
+                <a href="/mis-cartones">Mis cartones</a>.
               </p>
             </details>
             <details>

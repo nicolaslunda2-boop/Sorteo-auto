@@ -30,10 +30,24 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   }
   if (!order) return fail("Pedido no encontrado.", 404);
 
+  // Los cartones (con sus números) solo se entregan una vez pagados.
+  let tickets: { code: string; grid: number[] }[] = [];
+  if (order.status === "paid" || order.status === "conflict") {
+    const { data } = await db()
+      .from("tickets")
+      .select("code,grid")
+      .eq("order_id", id)
+      .eq("status", "sold")
+      .order("id");
+    tickets = data ?? [];
+  }
+
   return json({
     status: order.status,
     codes: order.ticket_codes,
     total: order.total,
+    name: order.buyer_name,
     firstName: String(order.buyer_name).split(" ")[0],
+    tickets,
   });
 }

@@ -4,9 +4,17 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
+import { PurchasedTickets, rememberOrder } from "@/components/PurchasedTickets";
 import { money } from "@/lib/pricing";
 
-type Order = { status: "pending" | "paid" | "rejected" | "conflict"; codes: string[]; total: number; firstName: string };
+type Order = {
+  status: "pending" | "paid" | "rejected" | "conflict";
+  codes: string[];
+  total: number;
+  name: string;
+  firstName: string;
+  tickets: { code: string; grid: number[] }[];
+};
 
 function Resultado() {
   const params = useSearchParams();
@@ -44,7 +52,8 @@ function Resultado() {
 
   useEffect(() => {
     if (order && order.status !== "pending") refresh();
-  }, [order, refresh]);
+    if (orderId && (order?.status === "paid" || order?.status === "conflict")) rememberOrder(orderId);
+  }, [order, orderId, refresh]);
 
   if (!orderId) return <div className="empty">No encontramos datos de la compra.</div>;
   if (error) return <div className="notice notice-error">{error}</div>;
@@ -56,18 +65,15 @@ function Resultado() {
         <div className="result-icon ok">✓</div>
         <div className="kicker">Pago acreditado</div>
         <h1 className="page-title">¡Felicitaciones, {order.firstName}!</h1>
-        <p className="muted">Ya participás del sorteo con {order.codes.length === 1 ? "tu cartón" : "tus cartones"}:</p>
-        <div className="codes">
-          {order.codes.map((c) => (
-            <span key={c} className="code-chip">
-              {c}
-            </span>
-          ))}
-        </div>
-        <p className="muted">Total pagado: {money(order.total)}. Guardá esta pantalla o anotá tus números. ¡Mucha suerte!</p>
-        <Link href="/" className="btn btn-ghost">
-          Volver al inicio
-        </Link>
+        <p className="muted">
+          Ya participás del sorteo. Total pagado: {money(order.total)}. Descargá {order.codes.length === 1 ? "tu cartón" : "tus cartones"}{" "}
+          y guardalo{order.codes.length === 1 ? "" : "s"} en el celular. ¡Mucha suerte!
+        </p>
+        <PurchasedTickets tickets={order.tickets} holder={order.name} />
+        <p className="muted" style={{ marginTop: 28, fontSize: ".9rem" }}>
+          Podés volver a verlos cuando quieras desde <Link href="/mis-cartones">Mis cartones</Link> (en este mismo
+          celular) o guardando el enlace de esta página.
+        </p>
       </div>
     );
   }

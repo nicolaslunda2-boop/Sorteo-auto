@@ -96,9 +96,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   if (statsError) {
     return (
       <Shell>
-        <div className="notice notice-error">
-          No se pudo leer la base de datos: {statsError.message}. ¿Ejecutaste el archivo <code>supabase/schema.sql</code>?
-        </div>
+        {params.msg && <div className="hint">{params.msg}</div>}
+        <SetupPanel />
       </Shell>
     );
   }
@@ -110,20 +109,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     <Shell>
       {params.msg && <div className="hint">{params.msg}</div>}
 
-      {s.total === 0 && (
-        <div className="panel" style={{ marginBottom: 24 }}>
-          <h2>Primer paso: crear los cartones</h2>
-          <p className="muted">
-            La base de datos está lista pero todavía no tiene cartones. Este botón crea los 6.000 cartones (A-0001 a
-            A-6000), todos distintos. Se hace una sola vez y tarda unos segundos.
-          </p>
-          <form method="post" action="/api/admin/init">
-            <button className="btn btn-gold" type="submit">
-              Crear los 6.000 cartones
-            </button>
-          </form>
-        </div>
-      )}
+      {s.total === 0 && <SetupPanel />}
 
       <div className="stats">
         <div className="stat">
@@ -212,6 +198,23 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </div>
       )}
     </Shell>
+  );
+}
+
+function SetupPanel() {
+  return (
+    <div className="panel" style={{ marginBottom: 24 }}>
+      <h2>Último paso: preparar la web</h2>
+      <p className="muted">
+        Este botón prepara la base de datos y crea los 6.000 cartones (A-0001 a A-6000), todos distintos. Se hace una
+        sola vez y tarda menos de un minuto. Si algo falla, podés tocarlo de nuevo sin problema.
+      </p>
+      <form method="post" action="/api/admin/init">
+        <button className="btn btn-gold" type="submit">
+          Preparar la web
+        </button>
+      </form>
+    </div>
   );
 }
 

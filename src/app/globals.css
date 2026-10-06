@@ -468,7 +468,7 @@ body:has(.cart-bar) footer.site-footer { padding-bottom: 110px; }
 .mp-note { display: flex; align-items: center; gap: 8px; justify-content: center; font-size: .8rem; color: var(--muted); margin-top: 10px; }
 
 /* ── Resultado ─────────────────────────────────────────── */
-.result { max-width: 640px; margin: 0 auto; text-align: center; }
+.result { max-width: 980px; margin: 0 auto; text-align: center; }
 .result-icon { width: 84px; height: 84px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; font: 700 2.2rem/1 var(--font-serif); border: 2px solid currentColor; }
 .result-icon.ok { color: var(--ok); }
 .result-icon.wait { color: var(--warn); }

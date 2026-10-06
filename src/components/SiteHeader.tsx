@@ -17,6 +17,7 @@ export function SiteHeader() {
           <Link className="nav-link" href="/#premios">Premios</Link>
           <Link className="nav-link" href="/#cartones">Cartones</Link>
           <Link className="nav-link" href="/#como-funciona">Cómo funciona</Link>
+          <Link className="nav-link" href="/mis-cartones">Mis cartones</Link>
           <Link className="nav-cart" href="/carrito">
             Mi compra {items.length > 0 && <span className="badge">{items.length}</span>}
           </Link>

@@ -277,3 +277,6 @@ exception when others then
   raise notice 'pg_cron no disponible: %', sqlerrm;
 end
 $do$;
+
+-- Avisa a Supabase que hay tablas y funciones nuevas.
+notify pgrst, 'reload schema';

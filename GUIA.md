@@ -1,266 +1,139 @@
-# Guía paso a paso para poner tu web online
+# Guía para poner tu web online (versión corta)
 
-Esta guía está pensada para alguien **sin experiencia técnica**. Seguila en orden.
-Calculá una hora y media en total. No hace falta instalar nada en tu computadora:
-todo se hace desde el navegador.
+Son **4 pasos**, unos **30 minutos** en total. No hace falta instalar nada: todo se hace
+desde el navegador (se puede desde el celular, pero es más cómodo en computadora).
 
----
-
-## Antes de empezar: ¿qué es cada cosa?
-
-Tu web usa tres servicios. Pensalo como un local:
-
-| Servicio | Qué hace | Analogía |
+| Paso | Qué hacés | Tiempo |
 |---|---|---|
-| **GitHub** | Guarda el código de la web (ya lo tenés: es donde está este archivo). | Los planos del local |
-| **Supabase** | La base de datos: guarda los 6.000 cartones, quién compró cada uno y qué cartones están reservados. | El cuaderno donde anotás todo |
-| **Vercel** | Publica la web en internet para que cualquiera la abra. | El local abierto al público |
-| **Mercado Pago** | Cobra y avisa a la web cuando un pago se aprobó. | La caja registradora |
+| 1 | Mercado Pago: crear la "aplicación" y copiar 1 clave | 10 min |
+| 2 | Vercel: publicar la web | 5 min |
+| 3 | Vercel: crear la base de datos con unos clics | 5 min |
+| 4 | Entrar a tu panel y tocar **"Preparar la web"** | 1 min |
+| ✔ | Hacer una compra de prueba y pasar a cobros reales | 10 min |
 
-Los tres tienen plan **gratuito**, alcanza para este sorteo. Mercado Pago cobra su
-comisión normal sobre cada venta.
-
-Vas a ir copiando unas "claves" de un servicio a otro. **Abrí un archivo de notas**
-(Bloc de notas, Notas del celular, etc.) para ir guardándolas a medida que aparecen:
-
-```
-SUPABASE_URL =
-SUPABASE_SERVICE_ROLE_KEY =
-MP_ACCESS_TOKEN =
-MP_WEBHOOK_SECRET =
-ADMIN_PASSWORD =
-NEXT_PUBLIC_SITE_URL =
-```
-
-> ⚠️ **Las claves son como las llaves de tu casa.** No las mandes por WhatsApp,
-> no las publiques y no las pegues en ningún lado que no sea Vercel.
+> ⚠️ Las claves son como las llaves de tu casa: no las mandes por WhatsApp ni las
+> publiques. Solo se pegan en Vercel.
 
 ---
 
-## Paso 0 — Juntar el código en la rama principal de GitHub
+## Paso 1 — Mercado Pago (para cobrar)
 
-El código de la web está en una rama (una "versión en borrador") llamada
-`claude/bingo-lottery-ticket-platform-8a6z03`. Hay que pasarla a la rama principal.
+Usá tu cuenta de Mercado Pago normal: es donde vas a recibir la plata.
 
-1. Entrá a <https://github.com/nicolaslunda2-boop/Sorteo-auto>.
-2. Si ves un cartel amarillo que dice **"claude/bingo-… had recent pushes"**, hacé clic
-   en **Compare & pull request**. Si no aparece: pestaña **Pull requests** →
-   **New pull request** → en "compare" elegí la rama `claude/bingo-lottery-ticket-platform-8a6z03`.
-3. Clic en **Create pull request** y después en **Merge pull request** → **Confirm merge**.
-
-Listo: el código ya está en la rama principal (`main`).
-
----
-
-## Paso 1 — Supabase (la base de datos)
-
-### 1.1 Crear la cuenta y el proyecto
-
-1. Entrá a <https://supabase.com> y tocá **Start your project**.
-2. Elegí **Continue with GitHub** (así usás la misma cuenta; más fácil).
-3. Te va a pedir crear una **organización**: poné tu nombre, plan **Free**.
-4. Clic en **New project** y completá:
-   - **Name:** `sorteo-auto`
-   - **Database Password:** tocá **Generate a password** y **guardala en tus notas**
-     (no la vas a necesitar seguido, pero no la pierdas).
-   - **Region:** elegí **South America (São Paulo)** — es la más cercana a Argentina,
-     la web va a andar más rápido.
-   - Si aparece la opción **"Enable Data API"**, dejala **activada**.
-5. Clic en **Create new project** y esperá 1–2 minutos hasta que termine.
-
-### 1.2 Crear las tablas (copiar y pegar)
-
-1. En el menú de la izquierda, entrá a **SQL Editor** (ícono `>_`).
-2. Clic en **New query** (o el botón **+**).
-3. En GitHub, abrí el archivo [`supabase/schema.sql`](supabase/schema.sql), tocá el
-   botón **Copy raw file** (ícono de dos hojitas) y pegalo entero en el editor de Supabase.
-4. Clic en **Run** (abajo a la derecha).
-5. Debería decir **"Success. No rows returned"**. Si aparece un aviso sobre
-   "destructive operation", confirmá con **Run this query**.
-
-Esto crea el "cuaderno" con todo lo necesario: cartones, pedidos, reservas que se
-vencen solas a los 15 minutos y la búsqueda por números favoritos.
-
-### 1.3 Copiar las claves
-
-1. Arriba, tocá el botón **Connect** (o andá a **Project Settings** → **Data API**).
-   Copiá la **Project URL** (algo como `https://abcdefgh.supabase.co`)
-   → en tus notas, en `SUPABASE_URL`.
-2. Andá a **Project Settings** (ícono de engranaje) → **API Keys**.
-   - Si ves una sección **Secret keys**, copiá la que empieza con `sb_secret_…`
-     (tocá el ojito o **Reveal** para verla).
-   - Si en cambio ves la pestaña **Legacy API keys**, copiá la **`service_role`**.
-
-   → en tus notas, en `SUPABASE_SERVICE_ROLE_KEY`.
-
-> ❗ No uses la clave **anon** / **publishable**: esa no sirve para esto.
-
----
-
-## Paso 2 — Mercado Pago Developers (los cobros)
-
-Necesitás una cuenta de Mercado Pago normal (la misma con la que vas a recibir la plata).
-
-### 2.1 Crear la aplicación
-
-1. Entrá a <https://www.mercadopago.com.ar/developers> e iniciá sesión con tu cuenta de
-   Mercado Pago.
-2. Arriba a la derecha, **Tus integraciones** → **Crear aplicación**.
+1. Entrá a <https://www.mercadopago.com.ar/developers> e iniciá sesión.
+2. Arriba a la derecha: **Tus integraciones** → **Crear aplicación**.
 3. Completá:
    - **Nombre:** `Sorteo Auto`
-   - **¿Qué tipo de solución vas a integrar?** → **Pagos online**.
-   - **¿Estás usando una plataforma de e-commerce?** → **No**.
-   - **¿Qué producto vas a integrar?** → **Checkout Pro**.
-4. Aceptá los términos y tocá **Crear aplicación**.
-
-### 2.2 Credenciales de PRUEBA (para probar sin plata real)
-
-1. Dentro de tu aplicación, menú izquierdo → **Credenciales de prueba**.
-2. Copiá el **Access Token** (empieza con `TEST-…` o `APP_USR-…`)
-   → en tus notas, en `MP_ACCESS_TOKEN`.
-
-### 2.3 Cuenta de comprador de prueba
-
-Mercado Pago no deja que te pagues a vos mismo, así que para probar necesitás
-un "comprador de mentira":
-
-1. Menú izquierdo → **Cuentas de prueba** → **Crear cuenta de prueba**.
-2. Descripción: `Comprador`, País: **Argentina**, saldo: `50000` (dinero ficticio).
-3. Guardá el **usuario** y la **contraseña** que te muestra.
-
-El Webhook (aviso automático de pagos) lo configuramos en el Paso 4, cuando la web
-ya tenga dirección.
+   - **Tipo de solución:** **Pagos online**
+   - **¿Usás una plataforma de e-commerce?** **No**
+   - **Producto:** **Checkout Pro**
+4. Aceptá y tocá **Crear aplicación**.
+5. Menú de la izquierda → **Credenciales de prueba** → copiá el **Access Token**
+   y guardalo en una nota. Lo vas a pegar en el paso 2.
+6. Menú de la izquierda → **Cuentas de prueba** → **Crear cuenta de prueba**:
+   descripción `Comprador`, país **Argentina**, saldo `50000`.
+   Guardá el **usuario** y la **contraseña** que te muestra (es un comprador "de mentira"
+   para probar sin plata real).
 
 ---
 
-## Paso 3 — Vercel (publicar la web)
-
-### 3.1 Crear la cuenta e importar el proyecto
+## Paso 2 — Vercel (publicar la web)
 
 1. Entrá a <https://vercel.com/signup>, elegí **Hobby** (gratis) y **Continue with GitHub**.
-2. Clic en **Add New…** → **Project**.
-3. En la lista aparece `Sorteo-auto` → **Import**. (Si no aparece, tocá
-   **Adjust GitHub App Permissions** y dale acceso a ese repositorio.)
-4. **No toques** "Framework Preset" ni "Build Settings": ya detecta todo solo (Next.js).
+2. **Add New…** → **Project** → al lado de `Sorteo-auto` tocá **Import**.
+   (Si no aparece: **Adjust GitHub App Permissions** y dale acceso a ese repositorio.)
+3. Abrí **Environment Variables** y cargá estas dos (nombre a la izquierda, valor a la
+   derecha, botón **Add**):
 
-### 3.2 Cargar las variables (las claves)
+   | Nombre | Valor |
+   |---|---|
+   | `MP_ACCESS_TOKEN` | el Access Token de prueba del paso 1 |
+   | `ADMIN_PASSWORD` | una contraseña que inventes para tu panel (ej: `Cronos-Sorteo-2026!`) |
 
-Antes de tocar **Deploy**, abrí la sección **Environment Variables** y cargá una por una
-(nombre a la izquierda, valor a la derecha, botón **Add**):
+4. Tocá **Deploy** y esperá 1–2 minutos. Vas a ver tu dirección, del tipo
+   **`https://sorteo-auto-xxxx.vercel.app`**.
 
-| Nombre (Key) | Valor |
-|---|---|
-| `SUPABASE_URL` | la de tus notas |
-| `SUPABASE_SERVICE_ROLE_KEY` | la de tus notas |
-| `MP_ACCESS_TOKEN` | el de PRUEBA, de tus notas |
-| `ADMIN_PASSWORD` | inventá una contraseña larga para tu panel (ej: `Auto-Sorteo-2026-xK9!`) |
+La web ya está online, pero todavía sin cartones: le falta la base de datos.
 
-> 💡 Truco: podés pegar todo el bloque de una vez en el primer casillero, con el
-> formato `NOMBRE=valor` (una por línea) y Vercel lo separa solo.
+---
 
-Ahora sí: **Deploy**. Tarda 1–2 minutos. Cuando termine vas a ver fuegos artificiales 🎉
-y una dirección del tipo **`https://sorteo-auto-xxxx.vercel.app`**.
+## Paso 3 — Base de datos (desde Vercel)
 
-### 3.3 Avisarle a la web cuál es su dirección
+1. Dentro de tu proyecto en Vercel, abrí la pestaña **Storage**.
+2. **Create Database** (o **Browse Marketplace**) → elegí **Supabase** → **Continue**.
+3. Aceptá los términos. Si te pregunta:
+   - **Plan:** **Free**
+   - **Región:** **São Paulo** (South America), la más cercana
+   - **Nombre:** `sorteo-auto`
+4. Tocá **Create**. Cuando termine, si te pregunta a qué proyecto conectarla, elegí
+   `sorteo-auto` (con todos los entornos marcados) → **Connect**.
+5. Pestaña **Deployments** → en el primero de la lista, los tres puntitos **⋯** →
+   **Redeploy** → **Redeploy**. Así la web "se entera" de la base de datos nueva.
 
-1. Copiá esa dirección (sin barra `/` al final) → en tus notas, en `NEXT_PUBLIC_SITE_URL`.
-2. En Vercel: tu proyecto → **Settings** → **Environment Variables** → agregá
-   `NEXT_PUBLIC_SITE_URL` con esa dirección → **Save**.
-3. Pestaña **Deployments** → en el primero de la lista, los tres puntitos **⋯** →
-   **Redeploy** → **Redeploy**. (Cada vez que cambies una variable hay que hacer esto.)
+Vercel crea la cuenta de Supabase y carga las claves solo: no tenés que copiar nada.
 
-### 3.4 Crear los 6.000 cartones
+---
+
+## Paso 4 — Preparar la web
 
 1. Abrí `https://TU-DIRECCION.vercel.app/admin`.
 2. Entrá con la contraseña que pusiste en `ADMIN_PASSWORD`.
-3. Vas a ver **"Primer paso: crear los cartones"** → **Crear los 6.000 cartones**.
-4. En unos segundos aparece "Listo: se crearon 6000 cartones".
+3. Tocá **Preparar la web**. En menos de un minuto aparece
+   **"¡Listo! Se crearon 6000 cartones"**.
 
-Abrí la página principal: ya deberías ver los cartones A-0001, A-0002…
-
----
-
-## Paso 4 — Webhook de Mercado Pago (confirmación automática)
-
-El webhook es el "aviso" que Mercado Pago le manda a tu web cuando alguien paga,
-para que el cartón quede marcado como **vendido** automáticamente.
-
-1. Volvé a Mercado Pago Developers → **Tus integraciones** → tu aplicación.
-2. Menú izquierdo → **Webhooks** → **Configurar notificaciones**.
-3. Completá **las dos** pestañas (Modo de prueba y Modo productivo) con la misma URL:
-
-   ```
-   https://TU-DIRECCION.vercel.app/api/webhooks/mercadopago
-   ```
-
-4. En **Eventos**, marcá solo **Pagos**.
-5. **Guardar configuración**.
-6. Aparece una **Clave secreta** (tocá el ojito para verla) → copiala → en tus notas,
-   en `MP_WEBHOOK_SECRET`.
-7. En Vercel → **Settings** → **Environment Variables** → agregá `MP_WEBHOOK_SECRET`
-   → **Save** → **Deployments** → **Redeploy**.
-
-> La clave secreta sirve para que la web compruebe que el aviso viene de verdad de
-> Mercado Pago y no de un tramposo.
+Abrí la página principal: ya se ven los cartones A-0001, A-0002…
 
 ---
 
-## Paso 5 — Hacer una compra de prueba
+## ✔ Compra de prueba
 
-1. Abrí tu web en una **ventana de incógnito** (así no estás logueado con tu Mercado Pago real).
-2. Elegí 3 cartones → fijate que el total sea **$15.000** (combo).
-3. **Ir a pagar** → completá datos inventados → **Pagar con Mercado Pago**.
-4. En Mercado Pago, iniciá sesión con el **comprador de prueba** del paso 2.3.
-5. Pagá con esta **tarjeta de prueba**:
-   - Número: `5031 7557 3453 0604` (Mastercard)
-   - Vencimiento: `11/30` · Código: `123`
-   - Nombre del titular: **`APRO`** (esa palabra hace que el pago se apruebe)
-   - DNI: `12345678`
-6. Al terminar, volvés a tu web y aparece **"¡Felicitaciones!"** con los números de cartón.
-7. Entrá a `/admin`: tenés que ver la compra, $15.000 recaudados y 3 cartones vendidos.
-   Probá el botón **Descargar lista de compradores (Excel)**.
+1. Abrí tu web en una **ventana de incógnito**.
+2. Elegí 3 cartones: el total tiene que dar **$15.000** (combo).
+3. **Ir a pagar** → completá datos → **Pagar con Mercado Pago**.
+4. En Mercado Pago, iniciá sesión con el **comprador de prueba** del paso 1.
+5. Pagá con esta tarjeta de prueba:
+   - Número `5031 7557 3453 0604` · Vencimiento `11/30` · Código `123`
+   - Titular: **`APRO`** (esa palabra hace que el pago se apruebe) · DNI `12345678`
+6. Volvés a la web y aparece **"¡Felicitaciones!"** con los cartones y el botón
+   **Descargar**.
+7. En `/admin` tenés que ver la compra y $15.000 recaudados.
 
-Si querés probar un pago rechazado, usá como nombre del titular `OTHE`.
+## ✔ Pasar a cobros reales
 
----
+1. Mercado Pago Developers → tu aplicación → **Credenciales de producción**
+   (puede pedirte rubro y sitio web: poné tu dirección de Vercel). Copiá el **Access Token**.
+2. Vercel → **Settings** → **Environment Variables** → `MP_ACCESS_TOKEN` → **⋯** →
+   **Edit** → pegá el nuevo → **Save**.
+3. **Deployments** → **⋯** → **Redeploy**.
+4. Hacé una compra real de 1 cartón (por ejemplo con la cuenta de un familiar) y después
+   devolvé ese pago desde tu Mercado Pago si querés.
 
-## Paso 6 — Pasar a cobros REALES
-
-Cuando la prueba salió bien:
-
-1. Mercado Pago Developers → tu aplicación → **Credenciales de producción**.
-   Puede pedirte completar datos del negocio (rubro, sitio web: poné tu dirección de Vercel).
-   Copiá el **Access Token** de producción (empieza con `APP_USR-…`).
-2. En Vercel → **Settings** → **Environment Variables** → buscá `MP_ACCESS_TOKEN` →
-   los tres puntitos → **Edit** → pegá el token de producción → **Save**.
-3. **Deployments** → **Redeploy**.
-4. Hacé **una compra real de 1 cartón** con otra persona (tu tarjeta en la cuenta de un
-   familiar, por ejemplo) para confirmar que todo funciona. Después podés devolver ese
-   pago desde tu Mercado Pago (Actividad → el pago → Devolver).
-
-¡Listo! Ya podés compartir el link. 🚗
+¡Listo para compartir el link! 🚗
 
 ---
 
-## Uso diario del panel `/admin`
+## Qué recibe el comprador
 
-- **Total recaudado**, **vendidos**, **disponibles** y **reservados ahora** (gente que
-  está en medio de una compra).
-- **Descargar lista de compradores**: un archivo que abre en Excel con una fila por
-  cartón vendido (cartón, nombre, DNI, email, teléfono, fecha, ID de pago).
-  Usalo para el día del sorteo.
-- Compras marcadas **"Revisar"** (en rojo): casos rarísimos en que alguien pagó tarde,
-  cuando su reserva ya había vencido y otra persona compró el mismo cartón. Contactá
-  a esa persona para darle otro cartón o devolverle el dinero desde Mercado Pago.
+Después de pagar ve sus cartones en pantalla, con botones para **descargarlos como
+imagen** o **compartirlos por WhatsApp**. Cada imagen tiene su nombre, el número de
+cartón y el sello "PAGADO". También puede volver a verlos desde **Mis cartones**.
+Mercado Pago, además, le manda el comprobante de pago por email.
 
-## Cambiar textos, fecha o precios
+## Tu panel `/admin`
 
-Todo está en un solo archivo: [`src/lib/config.ts`](src/lib/config.ts).
-Para editarlo: abrilo en GitHub → ícono del lápiz ✏️ → cambiá lo que está entre comillas
-(por ejemplo `fecha: "Fecha a confirmar"` → `fecha: "Sábado 20 de diciembre, 21 h"`) →
-**Commit changes**. Vercel publica la nueva versión sola en 1–2 minutos.
+- Total recaudado, vendidos, disponibles y reservados en este momento.
+- **Descargar lista de compradores (Excel)**: una fila por cartón vendido (cartón,
+  nombre, DNI, email, teléfono, fecha). Usala el día del sorteo.
+- Compras marcadas **"Revisar"** (en rojo): casos rarísimos en que alguien pagó cuando su
+  reserva ya había vencido y otra persona compró el mismo cartón. Contactala para darle
+  otro cartón o devolverle el dinero.
 
-> No cambies `SEMILLA_CARTONES` ni `TOTAL_TICKETS` una vez creados los cartones.
+## Cambiar textos, fecha o premios
+
+Todo está en [`src/lib/config.ts`](src/lib/config.ts). En GitHub: abrilo → lápiz ✏️ →
+cambiá lo que está entre comillas (por ejemplo `fecha: "Fecha a confirmar"`) →
+**Commit changes**. Vercel publica el cambio solo en 1–2 minutos.
+No cambies `SEMILLA_CARTONES` ni `TOTAL_TICKETS` después de crear los cartones.
 
 ---
 
@@ -268,22 +141,39 @@ Para editarlo: abrilo en GitHub → ícono del lápiz ✏️ → cambiá lo que 
 
 | Problema | Solución |
 |---|---|
-| La web dice "todavía no está conectada a la base de datos" | Revisá `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en Vercel y hacé **Redeploy**. |
-| En `/admin` dice "No se pudo leer la base de datos" | Volvé a ejecutar `supabase/schema.sql` en el SQL Editor (Paso 1.2). |
-| "No pudimos conectar con Mercado Pago" | Revisá `MP_ACCESS_TOKEN` (sin espacios al principio o final) y hacé **Redeploy**. |
-| Pagué pero el cartón no figura vendido | Revisá la URL del webhook (Paso 4) y que `NEXT_PUBLIC_SITE_URL` sea tu dirección real. En Mercado Pago → Webhooks podés ver si los avisos dan error. |
-| "Firma inválida" en los avisos del webhook | La `MP_WEBHOOK_SECRET` en Vercel no coincide con la de Mercado Pago. Copiala de nuevo y **Redeploy**. |
-| Supabase pausó el proyecto | En el plan gratuito, si nadie usa la web por 7 días Supabase la "duerme". Entrá a supabase.com y tocá **Restore project**. Con ventas activas no pasa. |
+| La web dice "todavía no está conectada a la base de datos" | Hiciste el paso 3 pero falta el **Redeploy** del final. |
+| "Preparar la web" muestra un error | Tocalo de nuevo. Si sigue, mandame una captura del mensaje. |
+| "No pudimos conectar con Mercado Pago" | Revisá `MP_ACCESS_TOKEN` (sin espacios) y hacé **Redeploy**. |
+| Pagué pero el cartón no figura vendido | Esperá un minuto y recargá. Mercado Pago avisa solo a la web; si no llega, la web lo verifica cuando el comprador vuelve. |
+| En Vercel no aparece Supabase en Storage | Usá el **Plan B** de abajo. |
+
+### Plan B: crear Supabase por tu cuenta
+
+Solo si el paso 3 no te funciona:
+
+1. Entrá a <https://supabase.com> → **Start your project** → **Continue with GitHub** →
+   **New project** (región São Paulo, generá y guardá la contraseña).
+2. **SQL Editor** → **New query** → pegá el contenido del archivo
+   [`supabase/schema.sql`](supabase/schema.sql) → **Run**.
+3. **Project Settings** → **API Keys**: copiá la clave secreta (`sb_secret_…` o
+   `service_role`). Y en **Data API** copiá la **Project URL**.
+4. En Vercel cargá `SUPABASE_URL` (la URL) y `SUPABASE_SERVICE_ROLE_KEY` (la clave),
+   hacé **Redeploy** y seguí con el paso 4.
+
+### Opcional: más seguridad en los avisos de pago
+
+En Mercado Pago → tu aplicación → **Webhooks** → **Configurar notificaciones**, poné la URL
+`https://TU-DIRECCION.vercel.app/api/webhooks/mercadopago`, evento **Pagos**, guardá, y
+copiá la **clave secreta** a Vercel como `MP_WEBHOOK_SECRET` (+ Redeploy). No es
+obligatorio: la web siempre confirma cada pago consultándolo directamente a Mercado Pago.
 
 ---
 
 ## Importante: lo legal
 
-En Argentina, las rifas y sorteos con venta de números suelen requerir **autorización
-de la lotería provincial** (por ejemplo, Lotería de la Ciudad o el Instituto de Lotería
-de tu provincia) y los premios pagan impuestos. Antes de vender, consultá con un
-contador o con la lotería de tu provincia para hacerlo en regla. Esta web registra
-todo (comprador, DNI, pago) para que tengas la documentación ordenada.
+En Argentina, las rifas y sorteos con venta de números suelen requerir **autorización de
+la lotería provincial**, y los premios pagan impuestos. Antes de vender, consultá con un
+contador o con la lotería de tu provincia.
 
-La web **vende los cartones**; el sorteo de las bolillas (del 1 al 90) lo hacés vos
-en vivo, usando la lista exportada para verificar los cartones ganadores.
+La web vende los cartones; el sorteo de las bolillas (1 al 90) lo hacés vos en vivo,
+usando la lista exportada para controlar los cartones ganadores.
