@@ -215,7 +215,7 @@ function SearchByCode() {
           <TicketGrid tickets={data.tickets} />
         </div>
       )}
-      {!query && <p className="muted" style={{ textAlign: "center" }}>¿Tenés un número de la suerte? Buscalo y fijate si está libre.</p>}
+      {!query && <p className="muted" style={{ textAlign: "center" }}>Escribí el número del cartón que buscás, por ejemplo <b>777</b> o <b>A-0777</b> (es lo mismo), y tocá Buscar.</p>}
     </div>
   );
 }
@@ -235,7 +235,9 @@ function Favorites() {
       <div className="fav-panel">
         <div className="kicker">Elegí hasta {MAX_FAVS} números</div>
         <p className="muted" style={{ margin: "6px 0 0" }}>
-          Te mostramos los cartones disponibles que tienen más números en común con los tuyos.
+          Tocá en el tablero los números que te gustan (no hace falta escribir nada). Para quitar uno, volvé a
+          tocarlo. Después tocá <b>Buscar cartones</b> y te mostramos los cartones disponibles con más números en
+          común, marcados en dorado.
         </p>
         <div className="fav-grid">
           {Array.from({ length: 90 }, (_, i) => i + 1).map((n) => (
