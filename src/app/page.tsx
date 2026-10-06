@@ -49,7 +49,7 @@ export default async function Home() {
 
               <div>
                 <div className="kicker">
-                  Billete oficial · Serie {SORTEO.serie} · {TOTAL_TICKETS.toLocaleString("es-AR")} cartones
+                  Billete oficial · Serie {SORTEO.serie}
                 </div>
                 <h1 className="hero-title">{SORTEO.titulo}</h1>
                 <p className="hero-sub">{SORTEO.subtitulo}</p>
@@ -120,7 +120,7 @@ export default async function Home() {
             <div className="rule kicker">Cartones</div>
             <h2>Elegí tu cartón de la suerte</h2>
             <p>
-              Del A-0001 al A-{String(TOTAL_TICKETS).padStart(4, "0")}. Cada uno con 15 números en 3 filas, ninguno se repite.
+              Cada cartón tiene 15 números en 3 filas y ninguno se repite.
             </p>
           </div>
           {isConfigured() ? (

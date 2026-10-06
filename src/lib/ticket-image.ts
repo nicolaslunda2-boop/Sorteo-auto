@@ -175,7 +175,7 @@ function drawTicket(ctx: CanvasRenderingContext2D, top: number, t: TicketForImag
   ctx.fillText(holder, PAD, fy + 12);
   ctx.font = `500 17px ${f.sans}`;
   ctx.fillStyle = C.goldDark;
-  ctx.fillText(`Sorteo: ${SORTEO.fecha}`, PAD, fy + 42);
+  ctx.fillText(`Sorteo: ${SORTEO.fecha}`, PAD, fy + 42, W - PAD * 2 - 240);
 
   // Sello "PAGADO"
   ctx.save();

@@ -7,7 +7,7 @@ export const SORTEO = {
   subtitulo: "Ganate un Fiat Cronos 2023",
   auto: "Fiat Cronos 2023",
   // Fecha y lugar del sorteo (texto libre).
-  fecha: "al venderse los 6.000 cartones",
+  fecha: "al venderse todos los cartones o el 20 de diciembre, lo que ocurra primero",
   lugar: "Transmisión en vivo por redes sociales",
   organizador: "Organización del Sorteo",
   contacto: "Consultas por WhatsApp",
