@@ -22,7 +22,7 @@ const sans = Manrope({
 
 export const metadata: Metadata = {
   title: `${SORTEO.titulo} · ${SORTEO.auto}`,
-  description: "Comprá tu cartón de bingo oficial y participá por un auto 0km, $1.000.000 y $2.000.000.",
+  description: `Comprá tu cartón de bingo oficial y participá por un ${SORTEO.auto}, $1.000.000 y $2.000.000.`,
 };
 
 export const viewport: Viewport = {

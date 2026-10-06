@@ -213,10 +213,10 @@ function Seal() {
       <circle cx="60" cy="60" r="52" fill="none" stroke="#7a5f27" strokeWidth="1" strokeDasharray="2 3" />
       <circle cx="60" cy="60" r="32" fill="none" stroke="#c9a44c" strokeWidth="1" />
       <text>
-        <textPath href="#seal-circle">SORTEO OFICIAL · CARTÓN LLENO · AUTO 0KM ·</textPath>
+        <textPath href="#seal-circle">SORTEO OFICIAL · FIAT CRONOS · MODELO 2023 ·</textPath>
       </text>
       <text x="60" y="58" textAnchor="middle" style={{ font: "700 15px var(--font-serif)", fontVariantNumeric: "lining-nums", letterSpacing: 0, fill: "#f1dc9f" }}>
-        0km
+        2023
       </text>
       <text x="60" y="73" textAnchor="middle" style={{ font: "700 7px var(--font-sans)", letterSpacing: 1.5, fill: "#c9a44c" }}>
         SERIE {SORTEO.serie}
