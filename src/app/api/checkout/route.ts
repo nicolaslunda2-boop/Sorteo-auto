@@ -1,7 +1,8 @@
 import { db, isConfigured } from "@/lib/supabase";
 import { fail, json, validSession } from "@/lib/api";
-import { PRECIOS, RESERVA_MINUTOS } from "@/lib/config";
+import { PRECIOS, RESERVA_MINUTOS, TRANSFERENCIA_HORAS } from "@/lib/config";
 import { createPreference } from "@/lib/mercadopago";
+import { paymentOptions } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,14 @@ function clean(v: unknown, max = 120): string {
 
 export async function POST(req: Request) {
   if (!isConfigured()) return fail("La base de datos todavía no está configurada.", 503);
-  if (!process.env.MP_ACCESS_TOKEN) return fail("Mercado Pago todavía no está configurado.", 503);
-
   const body = await req.json().catch(() => null);
+  const options = paymentOptions();
+  const method = body?.method === "mercadopago" ? "mercadopago" : "transfer";
+  if (!options[method]) {
+    if (!options.transfer && !options.mercadopago) return fail("Todavía no hay medios de pago configurados.", 503);
+    return fail("Ese medio de pago no está disponible.", 400);
+  }
+
   const session = body?.session;
   const name = clean(body?.name);
   const dni = clean(body?.dni, 20).replace(/\D/g, "");
@@ -35,7 +41,8 @@ export async function POST(req: Request) {
     p_price_single: PRECIOS.individual,
     p_combo_size: PRECIOS.comboCantidad,
     p_combo_price: PRECIOS.comboPrecio,
-    p_minutes: RESERVA_MINUTOS,
+    p_minutes: method === "transfer" ? TRANSFERENCIA_HORAS * 60 : RESERVA_MINUTOS,
+    p_method: method,
   });
   if (error) {
     if (error.message.includes("EMPTY_CART")) {
@@ -45,6 +52,10 @@ export async function POST(req: Request) {
   }
 
   const order = (data as { order_id: string; ticket_codes: string[]; total: number; expires_at: string }[])[0];
+
+  if (method === "transfer") {
+    return json({ orderId: order.order_id, url: `/compra/resultado?order=${order.order_id}` });
+  }
 
   try {
     const pref = await createPreference({

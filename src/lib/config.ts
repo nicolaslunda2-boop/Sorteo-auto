@@ -30,3 +30,7 @@ export const TOTAL_TICKETS = 6000;
 export const RESERVA_MINUTOS = 15;
 export const MAX_TICKETS_POR_PERSONA = 30;
 export const SEMILLA_CARTONES = 20261006;
+
+// Cuántas horas quedan apartados los cartones de una compra por transferencia
+// mientras esperás el pago. Si no confirmás antes, se liberan solos.
+export const TRANSFERENCIA_HORAS = 24;

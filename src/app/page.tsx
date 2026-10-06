@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TicketBrowser } from "@/components/TicketBrowser";
-import { PREMIOS, PRECIOS, SORTEO, TOTAL_TICKETS } from "@/lib/config";
+import { PREMIOS, PRECIOS, SORTEO, TOTAL_TICKETS, TRANSFERENCIA_HORAS } from "@/lib/config";
+import { paymentOptions } from "@/lib/payments";
 import { money } from "@/lib/pricing";
 import { db, isConfigured } from "@/lib/supabase";
 
@@ -16,12 +17,20 @@ async function getCounts(): Promise<{ total: number; sold: number } | null> {
 const PASOS = [
   { n: "I", t: "Elegí tu cartón", d: "Mirá la lista, buscá un número puntual o dejá que encontremos cartones con tus números favoritos." },
   { n: "II", t: "Lo reservamos", d: "Al elegirlo queda reservado a tu nombre por 15 minutos: nadie más puede comprarlo." },
-  { n: "III", t: "Pagás seguro", d: "Completás tus datos y pagás con Mercado Pago: tarjeta, débito o dinero en cuenta." },
+  { n: "III", t: "Pagás", d: "" },
   { n: "IV", t: "¡Ya participás!", d: "Apenas se acredita el pago, el cartón es tuyo y lo descargás como imagen en tu celular." },
 ];
 
 export default async function Home() {
   const counts = await getCounts();
+  const pay = paymentOptions();
+  const medio =
+    pay.transfer && pay.mercadopago
+      ? "por transferencia bancaria o con Mercado Pago"
+      : pay.mercadopago
+        ? "con Mercado Pago: tarjeta, débito o dinero en cuenta"
+        : "por transferencia desde tu banco o billetera virtual";
+  const pasos = PASOS.map((p) => (p.n === "III" ? { ...p, d: `Completás tus datos y pagás ${medio}.` } : p));
   const sold = counts?.sold ?? 0;
   const total = counts?.total ?? TOTAL_TICKETS;
   const pct = Math.min(100, (sold / total) * 100);
@@ -133,7 +142,7 @@ export default async function Home() {
             <h2>Cómo funciona</h2>
           </div>
           <div className="steps">
-            {PASOS.map((p) => (
+            {pasos.map((p) => (
               <div className="step" key={p.n}>
                 <div className="step-num">{p.n}</div>
                 <h3>{p.t}</h3>
@@ -169,15 +178,19 @@ export default async function Home() {
             <details>
               <summary>¿Qué pasa si no termino de pagar?</summary>
               <p>
-                Tu reserva dura 15 minutos. Si no se completa el pago en ese tiempo, el cartón vuelve a estar disponible
-                para otras personas.
+                Al elegir un cartón queda reservado 15 minutos mientras completás tus datos.
+                {pay.transfer &&
+                  ` Si pagás por transferencia, queda apartado hasta ${TRANSFERENCIA_HORAS} horas mientras confirmamos el pago.`}{" "}
+                Si el pago no se completa, el cartón vuelve a estar disponible para otras personas.
               </p>
             </details>
             <details>
               <summary>¿Cómo sé que mi cartón quedó comprado?</summary>
               <p>
-                Al terminar el pago vas a ver tus cartones y un botón para descargarlos como imagen en tu celular.
-                Además Mercado Pago te envía el comprobante por email. Podés volver a verlos cuando quieras en{" "}
+                {pay.transfer
+                  ? "Cuando confirmamos tu transferencia, en la página de tu compra aparecen tus cartones con un botón para descargarlos como imagen."
+                  : "Al terminar el pago vas a ver tus cartones y un botón para descargarlos como imagen en tu celular."}{" "}
+                Podés volver a verlos cuando quieras en{" "}
                 <a href="/mis-cartones">Mis cartones</a>.
               </p>
             </details>
@@ -197,7 +210,7 @@ export default async function Home() {
             © {new Date().getFullYear()} {SORTEO.organizador}
           </span>
           <span>{SORTEO.contacto}</span>
-          <span>Pagos procesados por Mercado Pago</span>
+          <span>{pay.transfer ? "Pago por transferencia bancaria" : "Pagos procesados por Mercado Pago"}</span>
         </div>
       </footer>
     </>

@@ -1,54 +1,39 @@
 # Guía para poner tu web online (versión corta)
 
-Son **4 pasos**, unos **30 minutos** en total. No hace falta instalar nada: todo se hace
+Son **3 pasos**, unos **15 minutos** en total. No hace falta instalar nada: todo se hace
 desde el navegador (se puede desde el celular, pero es más cómodo en computadora).
 
 | Paso | Qué hacés | Tiempo |
 |---|---|---|
-| 1 | Mercado Pago: crear la "aplicación" y copiar 1 clave | 10 min |
-| 2 | Vercel: publicar la web | 5 min |
-| 3 | Vercel: crear la base de datos con unos clics | 5 min |
-| 4 | Entrar a tu panel y tocar **"Preparar la web"** | 1 min |
-| ✔ | Hacer una compra de prueba y pasar a cobros reales | 10 min |
+| 1 | Vercel: publicar la web con tus datos bancarios | 5 min |
+| 2 | Vercel: crear la base de datos con unos clics | 5 min |
+| 3 | Entrar a tu panel y tocar **"Preparar la web"** | 1 min |
+| ✔ | Hacer una reserva de prueba | 5 min |
 
-> ⚠️ Las claves son como las llaves de tu casa: no las mandes por WhatsApp ni las
-> publiques. Solo se pegan en Vercel.
-
----
-
-## Paso 1 — Mercado Pago (para cobrar)
-
-Usá tu cuenta de Mercado Pago normal: es donde vas a recibir la plata.
-
-1. Entrá a <https://www.mercadopago.com.ar/developers> e iniciá sesión.
-2. Arriba a la derecha: **Tus integraciones** → **Crear aplicación**.
-3. Completá:
-   - **Nombre:** `Sorteo Auto`
-   - **Tipo de solución:** **Pagos online**
-   - **¿Usás una plataforma de e-commerce?** **No**
-   - **Producto:** **Checkout Pro**
-4. Aceptá y tocá **Crear aplicación**.
-5. Menú de la izquierda → **Credenciales de prueba** → copiá el **Access Token**
-   y guardalo en una nota. Lo vas a pegar en el paso 2.
-6. Menú de la izquierda → **Cuentas de prueba** → **Crear cuenta de prueba**:
-   descripción `Comprador`, país **Argentina**, saldo `50000`.
-   Guardá el **usuario** y la **contraseña** que te muestra (es un comprador "de mentira"
-   para probar sin plata real).
+Los compradores pagan **por transferencia** a tu cuenta: la plata te llega al instante y
+vos confirmás cada pago desde tu panel.
 
 ---
 
-## Paso 2 — Vercel (publicar la web)
+## Paso 1 — Vercel (publicar la web)
 
 1. Entrá a <https://vercel.com/signup>, elegí **Hobby** (gratis) y **Continue with GitHub**.
 2. **Add New…** → **Project** → al lado de `Sorteo-auto` tocá **Import**.
    (Si no aparece: **Adjust GitHub App Permissions** y dale acceso a ese repositorio.)
-3. Abrí **Environment Variables** y cargá estas dos (nombre a la izquierda, valor a la
-   derecha, botón **Add**):
+3. Abrí **Environment Variables** y cargá estos datos (nombre a la izquierda, valor a la
+   derecha, botón **Add** después de cada uno):
 
-   | Nombre | Valor |
-   |---|---|
-   | `MP_ACCESS_TOKEN` | el Access Token de prueba del paso 1 |
-   | `ADMIN_PASSWORD` | una contraseña que inventes para tu panel (ej: `Cronos-Sorteo-2026!`) |
+   | Nombre | Valor | Ejemplo |
+   |---|---|---|
+   | `ADMIN_PASSWORD` | una contraseña que inventes para tu panel | `Cronos-Sorteo-2026!` |
+   | `TRANSFER_ALIAS` | el alias de tu cuenta | `mi.alias.mp` |
+   | `TRANSFER_CBU` | tu CBU o CVU (22 números) | `0000003100012345678901` |
+   | `TRANSFER_TITULAR` | el nombre del titular de la cuenta | `Nicolás Lunda` |
+   | `TRANSFER_BANCO` | banco o billetera | `Mercado Pago`, `Brubank`, `Galicia`… |
+   | `WHATSAPP_NUMERO` | tu WhatsApp para recibir comprobantes: 549 + código de área sin 0 + número sin 15 | `5491155555555` |
+
+   El alias y el CBU los ves en la app de tu banco o billetera, en "Tus datos" o "Recibir dinero".
+   Si no querés mostrar alguno, no lo cargues (alcanza con el alias o el CBU).
 
 4. Tocá **Deploy** y esperá 1–2 minutos. Vas a ver tu dirección, del tipo
    **`https://sorteo-auto-xxxx.vercel.app`**.
@@ -57,7 +42,7 @@ La web ya está online, pero todavía sin cartones: le falta la base de datos.
 
 ---
 
-## Paso 3 — Base de datos (desde Vercel)
+## Paso 2 — Base de datos (desde Vercel)
 
 1. Dentro de tu proyecto en Vercel, abrí la pestaña **Storage**.
 2. **Create Database** (o **Browse Marketplace**) → elegí **Supabase** → **Continue**.
@@ -74,7 +59,7 @@ Vercel crea la cuenta de Supabase y carga las claves solo: no tenés que copiar 
 
 ---
 
-## Paso 4 — Preparar la web
+## Paso 3 — Preparar la web
 
 1. Abrí `https://TU-DIRECCION.vercel.app/admin`.
 2. Entrá con la contraseña que pusiste en `ADMIN_PASSWORD`.
@@ -85,47 +70,50 @@ Abrí la página principal: ya se ven los cartones A-0001, A-0002…
 
 ---
 
-## ✔ Compra de prueba
+## ✔ Reserva de prueba
 
-1. Abrí tu web en una **ventana de incógnito**.
-2. Elegí 3 cartones: el total tiene que dar **$15.000** (combo).
-3. **Ir a pagar** → completá datos → **Pagar con Mercado Pago**.
-4. En Mercado Pago, iniciá sesión con el **comprador de prueba** del paso 1.
-5. Pagá con esta tarjeta de prueba:
-   - Número `5031 7557 3453 0604` · Vencimiento `11/30` · Código `123`
-   - Titular: **`APRO`** (esa palabra hace que el pago se apruebe) · DNI `12345678`
-6. Volvés a la web y aparece **"¡Felicitaciones!"** con los cartones y el botón
-   **Descargar**.
-7. En `/admin` tenés que ver la compra y $15.000 recaudados.
-
-## ✔ Pasar a cobros reales
-
-1. Mercado Pago Developers → tu aplicación → **Credenciales de producción**
-   (puede pedirte rubro y sitio web: poné tu dirección de Vercel). Copiá el **Access Token**.
-2. Vercel → **Settings** → **Environment Variables** → `MP_ACCESS_TOKEN` → **⋯** →
-   **Edit** → pegá el nuevo → **Save**.
-3. **Deployments** → **⋯** → **Redeploy**.
-4. Hacé una compra real de 1 cartón (por ejemplo con la cuenta de un familiar) y después
-   devolvé ese pago desde tu Mercado Pago si querés.
+1. Abrí tu web desde el celular. Elegí 3 cartones: el total tiene que dar **$15.000** (combo).
+2. **Mi compra** → completá datos → **Reservar y ver datos para transferir**.
+3. Tenés que ver tu alias, CBU, el monto y el botón verde de WhatsApp. Probá el botón:
+   te abre WhatsApp con el mensaje armado.
+4. Entrá a `/admin`: arriba aparece **Transferencias por confirmar** con esa reserva.
+5. Como es una prueba, tocá **Cancelar**: los cartones vuelven a estar disponibles.
+   (Si tocás **Confirmar pago**, quedarían como vendidos.)
 
 ¡Listo para compartir el link! 🚗
 
 ---
 
+## Cómo atender las ventas (día a día)
+
+1. Alguien reserva cartones: le aparecen tus datos bancarios y el monto exacto.
+2. Te transfiere y te manda el comprobante por WhatsApp.
+3. Revisás en tu banco que llegó la plata y en `/admin` tocás **✓ Confirmar pago**.
+4. En la página de su compra (que se actualiza sola) le aparecen sus cartones con el botón
+   **Descargar**.
+
+Los cartones quedan apartados **24 horas** mientras esperás la transferencia. Si nadie
+paga, tocá **Cancelar** y se liberan; si no hacés nada, se liberan solos a las 24 horas.
+Confirmá los pagos dentro de ese plazo. (Las horas se cambian en `src/lib/config.ts`,
+en `TRANSFERENCIA_HORAS`.)
+
+Desde el panel, tocando el teléfono del comprador, le escribís directo por WhatsApp.
+
 ## Qué recibe el comprador
 
-Después de pagar ve sus cartones en pantalla, con botones para **descargarlos como
-imagen** o **compartirlos por WhatsApp**. Cada imagen tiene su nombre, el número de
+Cuando confirmás su pago, ve sus cartones en pantalla, con botones para **descargarlos
+como imagen** o **compartirlos por WhatsApp**. Cada imagen tiene su nombre, el número de
 cartón y el sello "PAGADO". También puede volver a verlos desde **Mis cartones**.
-Mercado Pago, además, le manda el comprobante de pago por email.
 
 ## Tu panel `/admin`
 
 - Total recaudado, vendidos, disponibles y reservados en este momento.
 - **Descargar lista de compradores (Excel)**: una fila por cartón vendido (cartón,
   nombre, DNI, email, teléfono, fecha). Usala el día del sorteo.
-- Compras marcadas **"Revisar"** (en rojo): casos rarísimos en que alguien pagó cuando su
-  reserva ya había vencido y otra persona compró el mismo cartón. Contactala para darle
+- **Transferencias por confirmar**: las reservas que esperan pago, con botones
+  **Confirmar pago** y **Cancelar**.
+- Compras marcadas **"Revisar"** (en rojo): pasa si confirmás un pago después de que la
+  reserva venció y otra persona ya había comprado el mismo cartón. Contactala para darle
   otro cartón o devolverle el dinero.
 
 ## Cambiar textos, fecha o premios
@@ -141,10 +129,10 @@ No cambies `SEMILLA_CARTONES` ni `TOTAL_TICKETS` después de crear los cartones.
 
 | Problema | Solución |
 |---|---|
-| La web dice "todavía no está conectada a la base de datos" | Hiciste el paso 3 pero falta el **Redeploy** del final. |
+| La web dice "todavía no está conectada a la base de datos" | Hiciste el paso 2 pero falta el **Redeploy** del final. |
 | "Preparar la web" muestra un error | Tocalo de nuevo. Si sigue, mandame una captura del mensaje. |
-| "No pudimos conectar con Mercado Pago" | Revisá `MP_ACCESS_TOKEN` (sin espacios) y hacé **Redeploy**. |
-| Pagué pero el cartón no figura vendido | Esperá un minuto y recargá. Mercado Pago avisa solo a la web; si no llega, la web lo verifica cuando el comprador vuelve. |
+| Al reservar dice "Todavía no hay medios de pago configurados" | Falta `TRANSFER_ALIAS` o `TRANSFER_CBU` en Vercel. Cargalo y hacé **Redeploy**. |
+| Cambié el alias y no se actualiza | Cada cambio de variables necesita **Redeploy**. |
 | En Vercel no aparece Supabase en Storage | Usá el **Plan B** de abajo. |
 
 ### Plan B: crear Supabase por tu cuenta
@@ -158,14 +146,15 @@ Solo si el paso 3 no te funciona:
 3. **Project Settings** → **API Keys**: copiá la clave secreta (`sb_secret_…` o
    `service_role`). Y en **Data API** copiá la **Project URL**.
 4. En Vercel cargá `SUPABASE_URL` (la URL) y `SUPABASE_SERVICE_ROLE_KEY` (la clave),
-   hacé **Redeploy** y seguí con el paso 4.
+   hacé **Redeploy** y seguí con el paso 3.
 
-### Opcional: más seguridad en los avisos de pago
+### Opcional: cobrar también con Mercado Pago (tarjeta)
 
-En Mercado Pago → tu aplicación → **Webhooks** → **Configurar notificaciones**, poné la URL
-`https://TU-DIRECCION.vercel.app/api/webhooks/mercadopago`, evento **Pagos**, guardá, y
-copiá la **clave secreta** a Vercel como `MP_WEBHOOK_SECRET` (+ Redeploy). No es
-obligatorio: la web siempre confirma cada pago consultándolo directamente a Mercado Pago.
+La web puede ofrecer, además de la transferencia, el pago con tarjeta por Mercado Pago, con
+confirmación automática. Si algún día lo querés: en <https://www.mercadopago.com.ar/developers>
+creá una aplicación de **Checkout Pro**, copiá el **Access Token** de producción y cargalo en
+Vercel como `MP_ACCESS_TOKEN` (+ Redeploy). El comprador va a poder elegir entre las dos formas
+de pago.
 
 ---
 

@@ -6,7 +6,24 @@ import { money } from "@/lib/pricing";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Administración", robots: { index: false } };
 
-type Stats = { total: number; sold: number; reserved: number; revenue: number; orders: number; conflicts: number };
+type Stats = {
+  total: number;
+  sold: number;
+  reserved: number;
+  revenue: number;
+  orders: number;
+  conflicts: number;
+  pending_transfers: number;
+};
+type Pending = {
+  id: string;
+  created_at: string;
+  buyer_name: string;
+  buyer_dni: string;
+  buyer_phone: string;
+  ticket_codes: string[];
+  total: number;
+};
 type Order = {
   id: string;
   paid_at: string | null;
@@ -80,7 +97,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   }
 
   const showAll = params.ver === "todos";
-  const [{ data: stats, error: statsError }, { data: orders }] = await Promise.all([
+  const [{ data: stats, error: statsError }, { data: orders }, { data: pending }] = await Promise.all([
     db().rpc("raffle_stats"),
     (() => {
       let q = db()
@@ -91,6 +108,13 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       if (!showAll) q = q.in("status", ["paid", "conflict"]);
       return q;
     })(),
+    db()
+      .from("orders")
+      .select("id,created_at,buyer_name,buyer_dni,buyer_phone,ticket_codes,total")
+      .eq("status", "pending")
+      .eq("payment_method", "transfer")
+      .order("created_at")
+      .limit(300),
   ]);
 
   if (statsError) {
@@ -135,10 +159,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       {s.conflicts > 0 && (
         <div className="notice notice-error" style={{ marginBottom: 20, textAlign: "left" }}>
           Hay {s.conflicts} compra(s) marcadas como <b>Revisar</b>: la persona pagó, pero alguno de sus cartones ya se había
-          vendido a otra persona mientras pagaba. Contactala para asignarle otro cartón o devolverle el dinero desde Mercado
-          Pago.
+          vendido a otra persona mientras pagaba. Contactala para asignarle otro cartón o devolverle el dinero.
         </div>
       )}
+
+      {pending && pending.length > 0 && <PendingTransfers list={pending as Pending[]} />}
 
       <div className="admin-actions">
         <a className="btn btn-gold" href="/api/admin/export">
@@ -171,7 +196,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                 <th>Cartones</th>
                 <th>Total</th>
                 <th>Estado</th>
-                <th>Pago MP</th>
+                <th>Pago</th>
               </tr>
             </thead>
             <tbody>
@@ -198,6 +223,73 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </div>
       )}
     </Shell>
+  );
+}
+
+function whatsappLink(phone: string, text: string) {
+  let digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (!digits.startsWith("54")) digits = `549${digits}`;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
+function PendingTransfers({ list }: { list: Pending[] }) {
+  return (
+    <div className="panel" style={{ marginBottom: 24, borderColor: "var(--gold-500)" }}>
+      <h2>Transferencias por confirmar ({list.length})</h2>
+      <p className="muted" style={{ marginTop: -6 }}>
+        Fijate en tu banco que haya llegado el monto y tocá <b>Confirmar pago</b>: el comprador ya puede descargar sus
+        cartones. Si no pagó, tocá <b>Cancelar</b> y los cartones vuelven a estar disponibles.
+      </p>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Reservado</th>
+              <th>Comprador</th>
+              <th>Cartones</th>
+              <th>Monto</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((o) => (
+              <tr key={o.id}>
+                <td>{fecha(o.created_at)}</td>
+                <td>
+                  {o.buyer_name}
+                  <br />
+                  <span className="muted">DNI {o.buyer_dni} · </span>
+                  <a href={whatsappLink(o.buyer_phone, `Hola ${o.buyer_name.split(" ")[0]}! Te escribo por tu reserva de cartones ${o.ticket_codes.join(", ")}.`)} target="_blank" rel="noreferrer">
+                    {o.buyer_phone}
+                  </a>
+                </td>
+                <td className="codes-cell">{o.ticket_codes.join(", ")}</td>
+                <td>
+                  <strong>{money(o.total)}</strong>
+                </td>
+                <td>
+                  <div className="admin-row-actions">
+                    <form method="post" action={`/api/admin/orders/${o.id}`}>
+                      <input type="hidden" name="action" value="confirm" />
+                      <button className="btn btn-sm btn-incart" type="submit">
+                        ✓ Confirmar pago
+                      </button>
+                    </form>
+                    <form method="post" action={`/api/admin/orders/${o.id}`}>
+                      <input type="hidden" name="action" value="cancel" />
+                      <button className="btn btn-sm btn-ghost" type="submit">
+                        Cancelar
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

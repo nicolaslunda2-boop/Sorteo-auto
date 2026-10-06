@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
 import { PurchasedTickets, rememberOrder } from "@/components/PurchasedTickets";
+import { TransferInstructions } from "@/components/TransferInstructions";
 import { money } from "@/lib/pricing";
 
 type Order = {
@@ -14,6 +15,9 @@ type Order = {
   name: string;
   firstName: string;
   tickets: { code: string; grid: number[] }[];
+  method: "transfer" | "mercadopago";
+  transfer: { alias: string; cbu: string | null; titular: string | null; banco: string | null; whatsapp: string | null } | null;
+  expiresAt: string | null;
 };
 
 function Resultado() {
@@ -43,12 +47,19 @@ function Resultado() {
     };
   }, [orderId, paymentId, tries]);
 
-  // Mientras esté pendiente, volvemos a consultar cada 4 segundos (hasta ~2 minutos).
+  // Mientras esté pendiente volvemos a consultar: Mercado Pago cada 4 s (~2 min);
+  // transferencia cada 15 s (~2 h), hasta que el administrador confirme.
   useEffect(() => {
-    if (order?.status !== "pending" || tries > 30) return;
-    const t = setTimeout(() => setTries((n) => n + 1), 4000);
+    if (order?.status !== "pending") return;
+    const transfer = order.method === "transfer";
+    if (tries > (transfer ? 480 : 30)) return;
+    const t = setTimeout(() => setTries((n) => n + 1), transfer ? 15000 : 4000);
     return () => clearTimeout(t);
   }, [order, tries]);
+
+  useEffect(() => {
+    if (orderId && order?.method === "transfer") rememberOrder(orderId);
+  }, [order, orderId]);
 
   useEffect(() => {
     if (order && order.status !== "pending") refresh();
@@ -87,6 +98,34 @@ function Resultado() {
           Pero alguno de tus cartones ya había sido vendido mientras pagabas. Nos vamos a comunicar con vos para
           asignarte otro cartón o devolverte el dinero.
         </p>
+      </div>
+    );
+  }
+
+  if (order.status === "pending" && order.method === "transfer") {
+    return (
+      <TransferInstructions
+        transfer={order.transfer}
+        total={order.total}
+        codes={order.codes}
+        name={order.name}
+        expiresAt={order.expiresAt}
+      />
+    );
+  }
+
+  if (order.status === "rejected" && order.method === "transfer") {
+    return (
+      <div className="result">
+        <div className="result-icon bad">✕</div>
+        <h1 className="page-title">Reserva cancelada</h1>
+        <p className="muted">
+          No recibimos la transferencia a tiempo y los cartones se liberaron. Si ya transferiste, contactate con la
+          organización con tu comprobante.
+        </p>
+        <Link href="/#cartones" className="btn btn-gold">
+          Elegir cartones
+        </Link>
       </div>
     );
   }

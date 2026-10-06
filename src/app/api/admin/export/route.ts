@@ -19,7 +19,7 @@ export async function GET() {
     .order("paid_at");
   if (error) return new Response(error.message, { status: 500 });
 
-  const header = ["Cartón", "Comprador", "DNI", "Email", "Teléfono", "Fecha de pago", "Total del pedido", "Estado", "ID pago MP", "ID pedido"];
+  const header = ["Cartón", "Comprador", "DNI", "Email", "Teléfono", "Fecha de pago", "Total del pedido", "Estado", "Pago", "ID pedido"];
   const rows = [header.join(";")];
   for (const o of data ?? []) {
     const fecha = o.paid_at

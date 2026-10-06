@@ -13,8 +13,9 @@ Web para vender 6.000 cartones de bingo español (A-0001 a A-6000) para el sorte
 - **Reserva de 15 minutos** al elegir un cartón, atómica en la base de datos: dos
   personas nunca pueden quedarse con el mismo cartón.
 - **Precios**: $6.500 individual, combo de 3 por $15.000, calculado automáticamente.
-- **Mercado Pago Checkout Pro** con confirmación automática por webhook (con
-  verificación de firma) y verificación de respaldo al volver del pago.
+- **Pago por transferencia bancaria**: el comprador ve alias/CBU y el monto, envía el
+  comprobante por WhatsApp y el administrador confirma el pago desde el panel.
+  Opcionalmente, **Mercado Pago Checkout Pro** con confirmación automática por webhook.
 - **Cartón descargable**: al pagar, el comprador ve sus cartones y los descarga como
   imagen (o los comparte por WhatsApp). También quedan en **Mis cartones**.
 - **Panel `/admin`** con contraseña: recaudación, vendidos, disponibles, reservados,

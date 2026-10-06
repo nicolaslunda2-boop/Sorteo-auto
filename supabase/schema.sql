@@ -26,6 +26,9 @@ create table if not exists public.orders (
   paid_at          timestamptz
 );
 
+-- Medio de pago: 'transfer' (transferencia bancaria) o 'mercadopago'.
+alter table public.orders add column if not exists payment_method text not null default 'mercadopago';
+
 create index if not exists orders_status_idx on public.orders (status);
 
 -- ── Cartones ───────────────────────────────────────────────────────
@@ -109,6 +112,7 @@ end;
 $$;
 
 -- ── Crea el pedido con los cartones reservados de la sesión ────────
+drop function if exists public.create_order(text, text, text, text, text, integer, integer, integer, integer);
 create or replace function public.create_order(
   p_session       text,
   p_name          text,
@@ -118,7 +122,8 @@ create or replace function public.create_order(
   p_price_single  integer,
   p_combo_size    integer,
   p_combo_price   integer,
-  p_minutes       integer default 15
+  p_minutes       integer default 15,
+  p_method        text default 'mercadopago'
 )
 returns table (order_id uuid, ticket_codes text[], total integer, expires_at timestamptz)
 language plpgsql
@@ -151,12 +156,16 @@ begin
   v_total := (v_n / p_combo_size) * p_combo_price + (v_n % p_combo_size) * p_price_single;
 
   insert into public.orders (session_id, buyer_name, buyer_dni, buyer_email, buyer_phone,
-                             ticket_ids, ticket_codes, total)
-  values (p_session, p_name, p_dni, p_email, p_phone, v_ids, v_codes, v_total)
+                             ticket_ids, ticket_codes, total, payment_method)
+  values (p_session, p_name, p_dni, p_email, p_phone, v_ids, v_codes, v_total, p_method)
   returning id into v_order;
 
+  -- En transferencias los cartones quedan apartados para el pedido (salen del carrito)
+  -- hasta que el administrador confirme o cancele el pago.
   update public.tickets
-     set order_id = v_order, reserved_until = v_expires
+     set order_id = v_order,
+         reserved_until = v_expires,
+         reserved_by = case when p_method = 'transfer' then 'order:' || v_order else reserved_by end
    where id = any (v_ids);
 
   return query select v_order, v_codes, v_total, v_expires;
@@ -238,7 +247,9 @@ as $$
     'reserved',  (select count(*) from public.tickets where status = 'reserved' and reserved_until > now()),
     'revenue',   (select coalesce(sum(total), 0) from public.orders where status in ('paid', 'conflict')),
     'orders',    (select count(*) from public.orders where status = 'paid'),
-    'conflicts', (select count(*) from public.orders where status = 'conflict')
+    'conflicts', (select count(*) from public.orders where status = 'conflict'),
+    'pending_transfers', (select count(*) from public.orders
+                           where status = 'pending' and payment_method = 'transfer')
   );
 $$;
 
@@ -251,14 +262,14 @@ grant all on public.tickets, public.orders, public.tickets_public to service_rol
 
 revoke execute on function public.release_expired_reservations() from public, anon, authenticated;
 revoke execute on function public.reserve_ticket(integer, text, integer, integer) from public, anon, authenticated;
-revoke execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer) from public, anon, authenticated;
+revoke execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text) from public, anon, authenticated;
 revoke execute on function public.confirm_order(uuid, text, numeric) from public, anon, authenticated;
 revoke execute on function public.search_favorites(smallint[], integer) from public, anon, authenticated;
 revoke execute on function public.raffle_stats() from public, anon, authenticated;
 
 grant execute on function public.release_expired_reservations() to service_role;
 grant execute on function public.reserve_ticket(integer, text, integer, integer) to service_role;
-grant execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer) to service_role;
+grant execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text) to service_role;
 grant execute on function public.confirm_order(uuid, text, numeric) to service_role;
 grant execute on function public.search_favorites(smallint[], integer) to service_role;
 grant execute on function public.raffle_stats() to service_role;
