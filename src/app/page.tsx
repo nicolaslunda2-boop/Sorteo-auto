@@ -120,7 +120,7 @@ export default async function Home() {
             <div className="rule kicker">Cartones</div>
             <h2>Elegí tu cartón de la suerte</h2>
             <p>
-              Cada cartón tiene 15 números en 3 filas y ninguno se repite.
+              Del A-0001 al A-{String(TOTAL_TICKETS).padStart(4, "0")}. Cada uno con 15 números en 3 filas, ninguno se repite.
             </p>
           </div>
           {isConfigured() ? (

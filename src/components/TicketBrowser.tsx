@@ -208,7 +208,7 @@ function SearchByCode() {
       {error && <div className="notice notice-error">{error}</div>}
       {loading && <div className="empty">Buscando…</div>}
       {!loading && data && data.tickets.length === 0 && (
-        <div className="empty">No existe ese número de cartón. Revisá el número e intentá de nuevo.</div>
+        <div className="empty">No existe ese número de cartón. Los cartones van del A-0001 al A-6000.</div>
       )}
       {!loading && data && data.tickets.length > 0 && (
         <div style={{ maxWidth: 420, margin: "0 auto" }}>
