@@ -197,7 +197,7 @@ export default async function Home() {
             <details>
               <summary>¿Dónde se hace el sorteo?</summary>
               <p>
-                {SORTEO.lugar}. Fecha: {SORTEO.fecha}.
+                Se sortea {SORTEO.fecha}. {SORTEO.lugar}.
               </p>
             </details>
           </div>
