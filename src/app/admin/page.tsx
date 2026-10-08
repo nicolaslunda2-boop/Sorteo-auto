@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { isAdmin } from "@/lib/admin-auth";
 import { db, isConfigured } from "@/lib/supabase";
 import { money } from "@/lib/pricing";
+import { ensureSchema } from "@/lib/migrate";
+import { PREMIO_REFERIDOS } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Administración", robots: { index: false } };
@@ -96,8 +98,18 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     );
   }
 
+  // Crea o actualiza las tablas si hace falta (por ejemplo, después de publicar cambios).
+  const schema = await ensureSchema();
+  if (!schema.ok) {
+    return (
+      <Shell>
+        <div className="notice notice-error">{schema.error}</div>
+      </Shell>
+    );
+  }
+
   const showAll = params.ver === "todos";
-  const [{ data: stats, error: statsError }, { data: orders }, { data: pending }] = await Promise.all([
+  const [{ data: stats, error: statsError }, { data: orders }, { data: pending }, { data: referrers }] = await Promise.all([
     db().rpc("raffle_stats"),
     (() => {
       let q = db()
@@ -115,6 +127,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       .eq("payment_method", "transfer")
       .order("created_at")
       .limit(300),
+    db().rpc("referral_ranking"),
   ]);
 
   if (statsError) {
@@ -222,7 +235,62 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </table>
         </div>
       )}
+      <Referrals list={(referrers as Referrer[] | null) ?? []} />
     </Shell>
+  );
+}
+
+type Referrer = { name: string; dni: string; phone: string; email: string; chances: number };
+
+function Referrals({ list }: { list: Referrer[] }) {
+  const total = list.reduce((n, r) => n + r.chances, 0);
+  return (
+    <div style={{ marginTop: 36 }}>
+      <h2 style={{ fontSize: "1.4rem", margin: "8px 0 6px" }}>Sorteo de referidos ({PREMIO_REFERIDOS})</h2>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Cada amigo distinto que compró y pagó con el link de alguien le da 1 chance. Total: {total}{" "}
+        {total === 1 ? "chance" : "chances"} entre {list.length} {list.length === 1 ? "persona" : "personas"}.
+      </p>
+      {list.length === 0 ? (
+        <div className="empty">Todavía nadie compró con un link de referido.</div>
+      ) : (
+        <>
+          <div className="admin-actions">
+            <a className="btn btn-ghost" href="/api/admin/export?tipo=referidos">
+              ⬇ Descargar chances de referidos (Excel)
+            </a>
+          </div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quién invitó</th>
+                  <th>DNI</th>
+                  <th>Contacto</th>
+                  <th>Amigos que compraron (chances)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((r) => (
+                  <tr key={r.dni}>
+                    <td>{r.name}</td>
+                    <td>{r.dni}</td>
+                    <td>
+                      {r.email}
+                      <br />
+                      <span className="muted">{r.phone}</span>
+                    </td>
+                    <td>
+                      <strong>{r.chances}</strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

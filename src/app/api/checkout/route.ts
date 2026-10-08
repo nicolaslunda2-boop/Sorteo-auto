@@ -3,6 +3,7 @@ import { fail, json, validSession } from "@/lib/api";
 import { PRECIOS, RESERVA_MINUTOS, TRANSFERENCIA_HORAS } from "@/lib/config";
 import { createPreference } from "@/lib/mercadopago";
 import { paymentOptions } from "@/lib/payments";
+import { ensureSchema } from "@/lib/migrate";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +27,18 @@ export async function POST(req: Request) {
   const email = clean(body?.email).toLowerCase();
   const phone = clean(body?.phone, 30);
 
+  // Código de quien lo invitó (llega desde un link ?ref=...). Si no es válido, se ignora.
+  const rawRef = typeof body?.ref === "string" ? body.ref.trim().toUpperCase() : "";
+  const referredBy = /^[A-Z0-9]{5,10}$/.test(rawRef) ? rawRef : null;
+
   if (!validSession(session)) return fail("Sesión inválida.");
   if (name.length < 3) return fail("Ingresá tu nombre y apellido.");
   if (dni.length < 7 || dni.length > 9) return fail("Ingresá un DNI válido.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Ingresá un email válido.");
   if (phone.replace(/\D/g, "").length < 8) return fail("Ingresá un teléfono válido.");
+
+  const schema = await ensureSchema();
+  if (!schema.ok) return fail("Estamos actualizando la web. Probá de nuevo en un minuto.", 503);
 
   const { data, error } = await db().rpc("create_order", {
     p_session: session,
@@ -43,6 +51,7 @@ export async function POST(req: Request) {
     p_combo_price: PRECIOS.comboPrecio,
     p_minutes: method === "transfer" ? TRANSFERENCIA_HORAS * 60 : RESERVA_MINUTOS,
     p_method: method,
+    p_referred_by: referredBy,
   });
   if (error) {
     if (error.message.includes("EMPTY_CART")) {

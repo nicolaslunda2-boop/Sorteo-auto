@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // El botón "Preparar la web" del panel lee este archivo para crear las tablas.
+  // La web lee este archivo para crear o actualizar la base de datos sola.
   outputFileTracingIncludes: {
-    "/api/admin/init": ["./supabase/schema.sql"],
+    "/**": ["./supabase/schema.sql"],
   },
 };
 

@@ -19,6 +19,26 @@ type CartState = {
 
 const CartContext = createContext<CartState | null>(null);
 const KEY = "sorteo-session";
+const REF_KEY = "sorteo-ref";
+
+/** Guarda el código de quien invitó (links con ?ref=CODIGO). */
+function captureReferral() {
+  try {
+    const ref = new URLSearchParams(window.location.search).get("ref")?.trim().toUpperCase();
+    if (ref && /^[A-Z0-9]{5,10}$/.test(ref)) localStorage.setItem(REF_KEY, ref);
+  } catch {
+    /* sin almacenamiento disponible */
+  }
+}
+
+/** Código de referido guardado (o null). */
+export function getReferral(): string | null {
+  try {
+    return localStorage.getItem(REF_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function getSession(): string {
   try {
@@ -39,7 +59,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => setSession(getSession()), []);
+  useEffect(() => {
+    setSession(getSession());
+    captureReferral();
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!session) return;

@@ -2,6 +2,7 @@ import { db, isConfigured } from "@/lib/supabase";
 import { fail, json } from "@/lib/api";
 import { processPayment } from "@/lib/mercadopago";
 import { transferInfo } from "@/lib/payments";
+import { ensureSchema } from "@/lib/migrate";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,10 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   if (!isConfigured()) return fail("La base de datos todavía no está configurada.", 503);
   const { id } = await ctx.params;
   if (!UUID.test(id)) return fail("Pedido inválido.", 404);
+  await ensureSchema();
 
   const read = () =>
-    db().from("orders").select("id,status,ticket_codes,total,buyer_name,mp_payment_id,payment_method").eq("id", id).maybeSingle();
+    db().from("orders").select("id,status,ticket_codes,total,buyer_name,mp_payment_id,payment_method,ref_code").eq("id", id).maybeSingle();
 
   let { data: order, error } = await read();
   if (error) return fail(error.message, 500);
@@ -43,6 +45,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     tickets = data ?? [];
   }
 
+  // Link para invitar: solo para compras pagadas.
+  let referral: { code: string; friends: number } | null = null;
+  if (order.status === "paid" && order.ref_code) {
+    const { data: friends } = await db().rpc("referral_count", { p_code: order.ref_code });
+    referral = { code: order.ref_code, friends: Number(friends ?? 0) };
+  }
+
   // Transferencia pendiente: datos bancarios y hasta cuándo siguen apartados los cartones.
   let transfer = null;
   let expiresAt: string | null = null;
@@ -68,5 +77,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     name: order.buyer_name,
     firstName: String(order.buyer_name).split(" ")[0],
     tickets,
+    referral,
   });
 }

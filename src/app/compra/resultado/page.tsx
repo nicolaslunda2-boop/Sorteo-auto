@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
 import { PurchasedTickets, rememberOrder } from "@/components/PurchasedTickets";
 import { TransferInstructions } from "@/components/TransferInstructions";
+import { ReferralBox } from "@/components/ReferralBox";
 import { money } from "@/lib/pricing";
 
 type Order = {
@@ -18,6 +19,7 @@ type Order = {
   method: "transfer" | "mercadopago";
   transfer: { alias: string; cbu: string | null; titular: string | null; banco: string | null; whatsapp: string | null } | null;
   expiresAt: string | null;
+  referral: { code: string; friends: number } | null;
 };
 
 function Resultado() {
@@ -81,6 +83,7 @@ function Resultado() {
           y guardalo{order.codes.length === 1 ? "" : "s"} en el celular. ¡Mucha suerte!
         </p>
         <PurchasedTickets tickets={order.tickets} holder={order.name} />
+        {order.referral && <ReferralBox code={order.referral.code} friends={order.referral.friends} />}
         <p className="muted" style={{ marginTop: 28, fontSize: ".9rem" }}>
           Podés volver a verlos cuando quieras desde <Link href="/mis-cartones">Mis cartones</Link> (en este mismo
           celular) o guardando el enlace de esta página.

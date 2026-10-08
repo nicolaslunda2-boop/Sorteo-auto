@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PurchasedTickets, rememberedOrders } from "@/components/PurchasedTickets";
+import { ReferralBox } from "@/components/ReferralBox";
 import { money } from "@/lib/pricing";
 
 type Order = {
@@ -13,6 +14,7 @@ type Order = {
   total: number;
   codes: string[];
   tickets: { code: string; grid: number[] }[];
+  referral: { code: string; friends: number } | null;
 };
 
 export default function MisCartonesPage() {
@@ -31,6 +33,7 @@ export default function MisCartonesPage() {
   }, []);
 
   const paid = orders?.filter((o) => o.tickets?.length) ?? [];
+  const referral = paid.find((o) => o.referral)?.referral ?? null;
   const waiting = orders?.filter((o) => o.status === "pending" && o.method === "transfer") ?? [];
 
   return (
@@ -58,6 +61,7 @@ export default function MisCartonesPage() {
             </Link>
           </div>
         )}
+        {referral && <ReferralBox code={referral.code} friends={referral.friends} />}
         {paid.map((o) => (
           <div key={o.id} style={{ marginBottom: 40 }}>
             <PurchasedTickets tickets={o.tickets} holder={o.name} />

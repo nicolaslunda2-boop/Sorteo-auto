@@ -8,9 +8,35 @@ function cell(v: unknown): string {
   return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+function csv(rows: string[], name: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  return new Response("\uFEFF" + rows.join("\r\n"), {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${name}-${today}.csv"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+/** Una fila por chance del sorteo de referidos (numeradas, para sortear). */
+async function referrals() {
+  const { data, error } = await db().rpc("referral_ranking");
+  if (error) return new Response(error.message, { status: 500 });
+  const rows = [["Chance Nº", "Quién invitó", "DNI", "Email", "Teléfono", "Amigos que compraron"].join(";")];
+  let n = 1;
+  for (const r of (data ?? []) as { name: string; dni: string; email: string; phone: string; chances: number }[]) {
+    for (let i = 0; i < r.chances; i++) {
+      rows.push([n++, r.name, r.dni, r.email, r.phone, r.chances].map(cell).join(";"));
+    }
+  }
+  return csv(rows, "referidos");
+}
+
 /** Descarga un archivo para Excel con una fila por cartón vendido. */
-export async function GET() {
+export async function GET(req: Request) {
   if (!(await isAdmin())) return new Response("No autorizado", { status: 401 });
+  if (new URL(req.url).searchParams.get("tipo") === "referidos") return referrals();
 
   const { data, error } = await db()
     .from("orders")
@@ -38,12 +64,5 @@ export async function GET() {
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  return new Response("﻿" + rows.join("\r\n"), {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="compradores-${today}.csv"`,
-      "Cache-Control": "no-store",
-    },
-  });
+  return csv(rows, "compradores");
 }

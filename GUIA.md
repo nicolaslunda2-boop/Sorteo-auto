@@ -99,6 +99,21 @@ en `TRANSFERENCIA_HORAS`.)
 
 Desde el panel, tocando el teléfono del comprador, le escribís directo por WhatsApp.
 
+## Premios extra
+
+- **10 premios de $100.000 al número de cartón:** el día del sorteo sorteás 10 números de
+  cartón entre los vendidos (usá la lista de compradores en Excel). Cada uno gana $100.000.
+- **$1.000.000 entre quienes invitan:** cada comprador recibe su propio link para invitar.
+  Cada amigo distinto que compra con ese link le suma 1 chance. En `/admin`, sección
+  **Sorteo de referidos**, ves quién invitó a cuántos y podés descargar el Excel con las
+  chances numeradas (una fila por chance) para hacer el sorteo.
+
+## Fotos del auto
+
+Las fotos están en la carpeta `public/fotos` y se listan en `FOTOS` dentro de
+`src/lib/config.ts` (la primera es la principal). Lo más fácil: mandáselas a Claude y las
+agrega.
+
 ## Qué recibe el comprador
 
 Cuando confirmás su pago, ve sus cartones en pantalla, con botones para **descargarlos

@@ -11,21 +11,41 @@ type Mode = "todos" | "numero" | "favoritos";
 
 const MAX_FAVS = 15;
 
+const MODES: { id: Mode; icon: string; title: string; text: string }[] = [
+  { id: "todos", icon: "☰", title: "Ver todos los cartones", text: "Recorré la lista y elegí el que más te guste." },
+  { id: "numero", icon: "#", title: "Buscar un Nº de cartón", text: "¿Tenés un número de la suerte? Ej.: A-0777." },
+  {
+    id: "favoritos",
+    icon: "★",
+    title: "Buscar con mis números",
+    text: "Marcá tus números favoritos y te mostramos los cartones que los tienen.",
+  },
+];
+
 export function TicketBrowser() {
   const [mode, setMode] = useState<Mode>("todos");
 
   return (
     <div>
-      <div className="tabs" role="tablist" aria-label="Formas de elegir">
-        <button className="tab" role="tab" aria-selected={mode === "todos"} onClick={() => setMode("todos")}>
-          Ver todos
-        </button>
-        <button className="tab" role="tab" aria-selected={mode === "numero"} onClick={() => setMode("numero")}>
-          Buscar Nº
-        </button>
-        <button className="tab" role="tab" aria-selected={mode === "favoritos"} onClick={() => setMode("favoritos")}>
-          Mis favoritos
-        </button>
+      <p className="modes-intro">¿Cómo querés elegir tu cartón? Tocá una opción:</p>
+      <div className="modes" role="tablist" aria-label="Formas de elegir">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            className="mode"
+            role="tab"
+            aria-selected={mode === m.id}
+            onClick={() => setMode(m.id)}
+          >
+            <span className="mode-icon" aria-hidden="true">
+              {m.icon}
+            </span>
+            <span className="mode-text">
+              <strong>{m.title}</strong>
+              <small>{m.text}</small>
+            </span>
+          </button>
+        ))}
       </div>
       {mode === "todos" && <AllTickets />}
       {mode === "numero" && <SearchByCode />}

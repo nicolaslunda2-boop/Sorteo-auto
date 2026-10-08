@@ -20,6 +20,22 @@ export const PREMIOS = [
   { nombre: "Cartón lleno", premio: "Fiat Cronos", detalle: "Modelo 2023 · los 15 números del cartón" },
 ];
 
+// Premios extra: se sortean números de cartón (sin importar los números del bingo).
+export const PREMIOS_CARTON = {
+  cantidad: 10,
+  premio: "$100.000",
+  detalle: "Se sortean 10 números de cartón entre todos los vendidos",
+};
+
+// Sorteo entre quienes invitan amigos con su link de referido.
+// Cada amigo distinto que compra con tu link = 1 chance más.
+export const PREMIO_REFERIDOS = "$1.000.000";
+
+// Fotos del auto (archivos dentro de la carpeta public/fotos). La primera es la principal.
+export const FOTOS = [
+  { src: "/fotos/01-frente.jpg", alt: "Fiat Cronos 2023 rojo, vista de frente" },
+];
+
 export const PRECIOS = {
   individual: 6500,
   comboCantidad: 3,

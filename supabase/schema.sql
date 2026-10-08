@@ -29,6 +29,13 @@ create table if not exists public.orders (
 -- Medio de pago: 'transfer' (transferencia bancaria) o 'mercadopago'.
 alter table public.orders add column if not exists payment_method text not null default 'mercadopago';
 
+-- Referidos: cada compra tiene su código para invitar (ref_code)
+-- y guarda el código de quien la invitó (referred_by).
+alter table public.orders add column if not exists ref_code text;
+alter table public.orders add column if not exists referred_by text;
+create unique index if not exists orders_ref_code_idx on public.orders (ref_code);
+create index if not exists orders_referred_by_idx on public.orders (referred_by);
+
 create index if not exists orders_status_idx on public.orders (status);
 
 -- ── Cartones ───────────────────────────────────────────────────────
@@ -113,6 +120,7 @@ $$;
 
 -- ── Crea el pedido con los cartones reservados de la sesión ────────
 drop function if exists public.create_order(text, text, text, text, text, integer, integer, integer, integer);
+drop function if exists public.create_order(text, text, text, text, text, integer, integer, integer, integer, text);
 create or replace function public.create_order(
   p_session       text,
   p_name          text,
@@ -123,7 +131,8 @@ create or replace function public.create_order(
   p_combo_size    integer,
   p_combo_price   integer,
   p_minutes       integer default 15,
-  p_method        text default 'mercadopago'
+  p_method        text default 'mercadopago',
+  p_referred_by   text default null
 )
 returns table (order_id uuid, ticket_codes text[], total integer, expires_at timestamptz)
 language plpgsql
@@ -156,8 +165,10 @@ begin
   v_total := (v_n / p_combo_size) * p_combo_price + (v_n % p_combo_size) * p_price_single;
 
   insert into public.orders (session_id, buyer_name, buyer_dni, buyer_email, buyer_phone,
-                             ticket_ids, ticket_codes, total, payment_method)
-  values (p_session, p_name, p_dni, p_email, p_phone, v_ids, v_codes, v_total, p_method)
+                             ticket_ids, ticket_codes, total, payment_method, ref_code, referred_by)
+  values (p_session, p_name, p_dni, p_email, p_phone, v_ids, v_codes, v_total, p_method,
+          upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 7)),
+          nullif(upper(trim(p_referred_by)), ''))
   returning id into v_order;
 
   -- En transferencias los cartones quedan apartados para el pedido (salen del carrito)
@@ -235,6 +246,46 @@ as $$
    limit p_limit;
 $$;
 
+-- ── Referidos ─────────────────────────────────────────────────────
+-- Una chance por cada amigo distinto (por DNI) que compró y pagó con tu link.
+-- Se agrupa por DNI: si alguien hizo varias compras, sus links suman juntos.
+create or replace function public.referral_ranking()
+returns table (name text, dni text, phone text, email text, chances integer)
+language sql
+stable
+as $$
+  select max(r.buyer_name), r.buyer_dni, max(r.buyer_phone), max(r.buyer_email),
+         count(distinct o.buyer_dni)::int
+    from public.orders o
+    join public.orders r on r.ref_code = o.referred_by
+   where o.status = 'paid'
+     and r.status in ('paid', 'conflict')
+     and o.buyer_dni <> r.buyer_dni
+   group by r.buyer_dni
+   order by 5 desc, 1;
+$$;
+
+-- Cuántos amigos compraron con el link de esta persona (todas sus compras).
+create or replace function public.referral_count(p_code text)
+returns integer
+language sql
+stable
+as $$
+  select count(distinct o.buyer_dni)::int
+    from public.orders o
+    join public.orders r on r.ref_code = o.referred_by
+   where o.status = 'paid'
+     and o.buyer_dni <> r.buyer_dni
+     and r.buyer_dni = (select buyer_dni from public.orders where ref_code = upper(p_code) limit 1);
+$$;
+
+-- Versión del esquema: la web la consulta para actualizar la base sola.
+create or replace function public.schema_version()
+returns integer
+language sql
+immutable
+as $$ select 2 $$;
+
 -- ── Números para el panel de administración ───────────────────────
 create or replace function public.raffle_stats()
 returns json
@@ -262,17 +313,22 @@ grant all on public.tickets, public.orders, public.tickets_public to service_rol
 
 revoke execute on function public.release_expired_reservations() from public, anon, authenticated;
 revoke execute on function public.reserve_ticket(integer, text, integer, integer) from public, anon, authenticated;
-revoke execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text) from public, anon, authenticated;
+revoke execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text, text) from public, anon, authenticated;
 revoke execute on function public.confirm_order(uuid, text, numeric) from public, anon, authenticated;
 revoke execute on function public.search_favorites(smallint[], integer) from public, anon, authenticated;
 revoke execute on function public.raffle_stats() from public, anon, authenticated;
+revoke execute on function public.referral_ranking() from public, anon, authenticated;
+revoke execute on function public.referral_count(text) from public, anon, authenticated;
 
 grant execute on function public.release_expired_reservations() to service_role;
 grant execute on function public.reserve_ticket(integer, text, integer, integer) to service_role;
-grant execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text) to service_role;
+grant execute on function public.create_order(text, text, text, text, text, integer, integer, integer, integer, text, text) to service_role;
 grant execute on function public.confirm_order(uuid, text, numeric) to service_role;
 grant execute on function public.search_favorites(smallint[], integer) to service_role;
 grant execute on function public.raffle_stats() to service_role;
+grant execute on function public.referral_ranking() to service_role;
+grant execute on function public.referral_count(text) to service_role;
+grant execute on function public.schema_version() to service_role;
 
 -- ── Limpieza automática cada minuto (pg_cron) ─────────────────────
 -- Aunque esto falle, la web igual trata las reservas vencidas como disponibles.

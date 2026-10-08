@@ -526,3 +526,105 @@ tr.conflict td { background: rgba(182,64,58,.12); }
 .btn-whatsapp:hover:not(:disabled) { background: #188247; color: #fff; }
 .admin-row-actions { display: flex; gap: 6px; }
 .admin-row-actions form { margin: 0; }
+
+/* ── Referidos ─────────────────────────────────────────── */
+.referral { max-width: 560px; margin: 28px auto; text-align: left; border-color: var(--gold-500); }
+.referral h2 { margin: 6px 0 8px; }
+.referral-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; margin: 14px 0 12px; border: 1px dashed var(--gold-600); border-radius: 10px;
+  background: rgba(6,13,34,.6);
+}
+.referral-link .mono { font-family: ui-monospace, Menlo, monospace; font-size: .92rem; color: var(--gold-300); overflow-wrap: anywhere; }
+.referral-count { margin: 12px 0 0; text-align: center; font-size: .9rem; color: var(--muted); }
+
+/* ── Galería del premio ────────────────────────────────── */
+.gallery { margin-bottom: 26px; }
+.gallery-frame {
+  position: relative; border-radius: 22px; padding: 6px; border: 1px solid var(--gold-600);
+  background: linear-gradient(160deg, rgba(23,42,90,.65), rgba(6,13,34,.85));
+  box-shadow: 0 40px 80px -40px rgba(0,0,0,.8);
+}
+.gallery-track {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 17px;
+  scrollbar-width: none; width: 100%; aspect-ratio: 16 / 9;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery-slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; }
+.gallery-caption {
+  position: absolute; left: 6px; right: 6px; bottom: 6px; padding: 60px 26px 20px;
+  border-radius: 0 0 17px 17px; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(6,13,34,.92));
+}
+.gallery-caption strong { display: block; font: 700 clamp(1.5rem, 4vw, 2.4rem)/1.1 var(--font-serif); color: #fbf6e8; margin-top: 4px; }
+.gallery-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--gold-500); background: rgba(6,13,34,.7); color: var(--gold-300);
+  font: 400 1.8rem/1 var(--font-serif); cursor: pointer; display: grid; place-items: center; padding-bottom: 4px;
+}
+.gallery-arrow:hover { background: rgba(6,13,34,.9); }
+.gallery-arrow.prev { left: 18px; }
+.gallery-arrow.next { right: 18px; }
+.gallery-count {
+  position: absolute; top: 18px; right: 18px; padding: 4px 10px; border-radius: 999px;
+  background: rgba(6,13,34,.75); color: var(--gold-300); font-size: .8rem; font-weight: 700;
+}
+.gallery-thumbs { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
+.gallery-thumb {
+  position: relative; flex: 0 0 84px; height: 60px; border-radius: 8px; overflow: hidden; padding: 0; cursor: pointer;
+  border: 2px solid transparent; background: var(--ink-800); opacity: .6;
+}
+.gallery-thumb.active { border-color: var(--gold-500); opacity: 1; }
+@media (max-width: 600px) {
+  .gallery-track { aspect-ratio: 4 / 3; }
+  .gallery-arrow { width: 36px; height: 36px; font-size: 1.5rem; }
+  .gallery-arrow.prev { left: 12px; }
+  .gallery-arrow.next { right: 12px; }
+  .gallery-caption { padding: 40px 16px 14px; }
+}
+.prize.extra { padding: 12px 18px; background: rgba(6,13,34,.35); border-style: dashed; }
+.prize.extra .prize-num { font-size: 1rem; }
+.prize.extra .prize-amount { font-size: 1.25rem; }
+.prize.extra .prize-amount small { font: 600 .75rem var(--font-sans); color: var(--muted); }
+a.prize.extra { color: inherit; }
+a.prize.extra:hover { border-color: var(--gold-500); }
+
+/* ── Invitá y ganá (inicio) ────────────────────────────── */
+.invite {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center;
+  padding: 36px; border: 1px solid var(--gold-600); border-radius: 22px;
+  background: linear-gradient(135deg, rgba(241,220,159,.12), rgba(6,13,34,.6));
+}
+.invite h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin: 10px 0 12px; }
+.invite p { margin: 0; }
+.invite-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: paso; }
+.invite-steps li {
+  counter-increment: paso; display: grid; grid-template-columns: 40px 1fr; column-gap: 14px; align-items: center;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(6,13,34,.55);
+}
+.invite-steps li::before {
+  content: counter(paso); grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--gold-500); color: var(--ink-950); font: 800 1.1rem/1 var(--font-serif);
+}
+.invite-steps b { color: #fbf6e8; }
+.invite-steps span { color: var(--muted); font-size: .9rem; }
+@media (max-width: 800px) { .invite { grid-template-columns: 1fr; padding: 24px 20px; } }
+
+/* ── Formas de elegir (reemplaza a las pestañas) ───────── */
+.modes-intro { text-align: center; color: var(--muted); margin: 0 0 12px; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto 28px; max-width: 980px; }
+.mode {
+  display: flex; align-items: center; gap: 14px; text-align: left; cursor: pointer;
+  padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: rgba(6,13,34,.55);
+  color: var(--text); font-family: var(--font-sans); transition: border-color .15s, background .15s;
+}
+.mode:hover { border-color: var(--gold-500); }
+.mode[aria-selected="true"] { border-color: var(--gold-400); background: linear-gradient(135deg, rgba(241,220,159,.18), rgba(201,164,76,.06)); box-shadow: 0 0 0 1px var(--gold-500) inset; }
+.mode-icon {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--gold-600); color: var(--gold-300); font: 700 1.2rem/1 var(--font-serif);
+}
+.mode[aria-selected="true"] .mode-icon { background: var(--gold-500); color: var(--ink-950); border-color: var(--gold-300); }
+.mode-text strong { display: block; font-size: 1rem; color: #fbf6e8; }
+.mode-text small { display: block; font-size: .84rem; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+@media (max-width: 800px) { .modes { grid-template-columns: 1fr; gap: 8px; } .mode { padding: 12px 14px; } }

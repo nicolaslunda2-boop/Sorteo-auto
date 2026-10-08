@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { TicketBrowser } from "@/components/TicketBrowser";
-import { PREMIOS, PRECIOS, SORTEO, TOTAL_TICKETS, TRANSFERENCIA_HORAS } from "@/lib/config";
+import {
+  FOTOS,
+  PREMIO_REFERIDOS,
+  PREMIOS,
+  PREMIOS_CARTON,
+  PRECIOS,
+  SORTEO,
+  TOTAL_TICKETS,
+  TRANSFERENCIA_HORAS,
+} from "@/lib/config";
+import { Gallery } from "@/components/Gallery";
 import { paymentOptions } from "@/lib/payments";
 import { money } from "@/lib/pricing";
 import { db, isConfigured } from "@/lib/supabase";
@@ -40,6 +50,7 @@ export default async function Home() {
     <>
       <section className="hero">
         <div className="container">
+          <Gallery fotos={FOTOS} caption={SORTEO.auto} />
           <div className="certificate">
             <div className="certificate-inner">
               <span className="corner tl" />
@@ -54,7 +65,7 @@ export default async function Home() {
                 <h1 className="hero-title">{SORTEO.titulo}</h1>
                 <p className="hero-sub">{SORTEO.subtitulo}</p>
                 <p className="hero-lead">
-                  Cada cartón es un bingo único de 15 números. Con uno solo participás por los tres premios.
+                  Cada cartón es un bingo único de 15 números. Con uno solo participás por todos los premios.
                   Sorteo: {SORTEO.fecha}.
                 </p>
                 <div className="price-tags">
@@ -93,6 +104,25 @@ export default async function Home() {
                     <div className="prize-amount">{p.premio}</div>
                   </div>
                 ))}
+                <div className="prize extra">
+                  <div className="prize-num">×{PREMIOS_CARTON.cantidad}</div>
+                  <div>
+                    <div className="prize-name">Premios al número de cartón</div>
+                    <div className="prize-detail">{PREMIOS_CARTON.detalle}</div>
+                  </div>
+                  <div className="prize-amount">
+                    {PREMIOS_CARTON.premio}
+                    <small> c/u</small>
+                  </div>
+                </div>
+                <a className="prize extra" href="#invita">
+                  <div className="prize-num">★</div>
+                  <div>
+                    <div className="prize-name">Invitá y ganá</div>
+                    <div className="prize-detail">Sorteo entre quienes invitan amigos</div>
+                  </div>
+                  <div className="prize-amount">{PREMIO_REFERIDOS}</div>
+                </a>
                 {counts && (
                   <div className="progress-wrap">
                     <div className="progress-labels">
@@ -135,6 +165,35 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="section" id="invita">
+        <div className="container">
+          <div className="invite">
+            <div>
+              <div className="kicker">Invitá y ganá</div>
+              <h2>{PREMIO_REFERIDOS} extra para quienes invitan</h2>
+              <p className="muted">
+                Cuando comprás tu cartón recibís tu propio link para invitar. Por cada amigo que compre con tu link sumás{" "}
+                <b>1 chance</b> en el sorteo de {PREMIO_REFERIDOS} entre quienes invitan. Cuantos más amigos, más chances.
+              </p>
+            </div>
+            <ol className="invite-steps">
+              <li>
+                <b>Comprás tu cartón</b>
+                <span>Al confirmarse el pago aparece tu link personal.</span>
+              </li>
+              <li>
+                <b>Lo compartís</b>
+                <span>Por WhatsApp, redes o donde quieras.</span>
+              </li>
+              <li>
+                <b>Sumás chances</b>
+                <span>Cada amigo que compra con tu link es 1 chance más.</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
       <section className="section" id="como-funciona">
         <div className="container">
           <div className="section-head">
@@ -165,6 +224,22 @@ export default async function Home() {
               <p>
                 Se sortean bolillas del 1 al 90. Gana {PREMIOS[0].premio} quien primero complete una fila de su cartón (1ra
                 línea), {PREMIOS[1].premio} la 2da línea, y el auto quien primero complete los 15 números (cartón lleno).
+              </p>
+            </details>
+            <details>
+              <summary>¿Cómo son los {PREMIOS_CARTON.cantidad} premios de {PREMIOS_CARTON.premio}?</summary>
+              <p>
+                Además del bingo, se sortean {PREMIOS_CARTON.cantidad} números de cartón entre todos los vendidos (por
+                ejemplo, sale el A-0777). Cada número sorteado gana {PREMIOS_CARTON.premio}, sin importar los números del
+                bingo.
+              </p>
+            </details>
+            <details>
+              <summary>¿Cómo funciona el premio por invitar amigos?</summary>
+              <p>
+                Al comprar tu cartón recibís un link personal. Cada amigo distinto que compre su cartón con tu link te da 1
+                chance en el sorteo de {PREMIO_REFERIDOS} entre quienes invitan. Podés ver tu link y cuántos amigos
+                compraron en <a href="/mis-cartones">Mis cartones</a>.
               </p>
             </details>
             <details>

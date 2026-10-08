@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BingoCard } from "@/components/BingoCard";
-import { useCart, useCountdown } from "@/components/CartProvider";
+import { getReferral, useCart, useCountdown } from "@/components/CartProvider";
 import { PRECIOS, RESERVA_MINUTOS, TRANSFERENCIA_HORAS } from "@/lib/config";
 import { calcTotal, money } from "@/lib/pricing";
 
@@ -30,7 +30,7 @@ export function CheckoutClient({ options }: { options: Options }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session: cart.session, method, ...form }),
+        body: JSON.stringify({ session: cart.session, method, ref: getReferral(), ...form }),
       });
       const data = await res.json();
       if (!res.ok) {
