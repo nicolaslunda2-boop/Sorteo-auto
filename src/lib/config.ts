@@ -44,7 +44,6 @@ export const FOTOS: { src: string; alt: string; vertical?: boolean }[] = [
   { src: "/fotos/06-trasera.jpg", alt: "Parte trasera del Fiat Cronos", vertical: true },
   { src: "/fotos/07-tablero.jpg", alt: "Tablero, pantalla táctil y caja automática" },
   { src: "/fotos/08-asientos.jpg", alt: "Asientos delanteros" },
-  { src: "/fotos/09-asientos-traseros.jpg", alt: "Asientos traseros", vertical: true },
 ];
 
 export const PRECIOS = {
