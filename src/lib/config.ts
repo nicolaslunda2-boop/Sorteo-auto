@@ -32,8 +32,16 @@ export const PREMIOS_CARTON = {
 export const PREMIO_REFERIDOS = "$1.000.000";
 
 // Fotos del auto (archivos dentro de la carpeta public/fotos). La primera es la principal.
-export const FOTOS = [
+// "vertical: true" para fotos sacadas con el celular parado (se muestran enteras).
+export const FOTOS: { src: string; alt: string; vertical?: boolean }[] = [
   { src: "/fotos/01-frente.jpg", alt: "Fiat Cronos 2023 rojo, vista de frente" },
+  { src: "/fotos/02-frente-recto.jpg", alt: "Frente del Fiat Cronos", vertical: true },
+  { src: "/fotos/03-frente-lateral.jpg", alt: "Frente y lateral izquierdo" },
+  { src: "/fotos/04-lateral-trasero.jpg", alt: "Lateral derecho y parte trasera" },
+  { src: "/fotos/05-trasera-lateral.jpg", alt: "Parte trasera y lateral izquierdo" },
+  { src: "/fotos/06-trasera.jpg", alt: "Parte trasera del Fiat Cronos", vertical: true },
+  { src: "/fotos/07-tablero.jpg", alt: "Tablero, pantalla táctil y caja automática" },
+  { src: "/fotos/08-asientos.jpg", alt: "Asientos delanteros" },
 ];
 
 export const PRECIOS = {

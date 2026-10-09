@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-type Foto = { src: string; alt: string };
+type Foto = { src: string; alt: string; vertical?: boolean };
 
 /** Galería de fotos del premio: se desliza con el dedo; flechas y miniaturas si hay varias. */
 export function Gallery({ fotos, caption }: { fotos: Foto[]; caption: string }) {
@@ -32,13 +32,18 @@ export function Gallery({ fotos, caption }: { fotos: Foto[]; caption: string }) 
         >
           {fotos.map((f, i) => (
             <div className="gallery-slide" key={f.src}>
+              {f.vertical && (
+                // Fondo difuminado para que la foto vertical se vea entera sin franjas vacías.
+                <Image src={f.src} alt="" fill sizes="400px" className="gallery-backdrop" style={{ objectFit: "cover" }} />
+              )}
               <Image
                 src={f.src}
                 alt={f.alt}
                 fill
                 sizes="(max-width: 1180px) 100vw, 1150px"
                 priority={i === 0}
-                style={{ objectFit: "cover" }}
+                loading={i === 0 ? undefined : "lazy"}
+                style={{ objectFit: f.vertical ? "contain" : "cover" }}
               />
             </div>
           ))}

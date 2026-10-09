@@ -550,7 +550,7 @@ tr.conflict td { background: rgba(182,64,58,.12); }
   scrollbar-width: none; width: 100%; aspect-ratio: 16 / 9;
 }
 .gallery-track::-webkit-scrollbar { display: none; }
-.gallery-slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; }
+.gallery-slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; overflow: hidden; }
 .gallery-caption {
   position: absolute; left: 6px; right: 6px; bottom: 6px; padding: 60px 26px 20px;
   border-radius: 0 0 17px 17px; pointer-events: none;
@@ -628,3 +628,4 @@ a.prize.extra:hover { border-color: var(--gold-500); }
 .mode-text strong { display: block; font-size: 1rem; color: #fbf6e8; }
 .mode-text small { display: block; font-size: .84rem; color: var(--muted); line-height: 1.35; margin-top: 2px; }
 @media (max-width: 800px) { .modes { grid-template-columns: 1fr; gap: 8px; } .mode { padding: 12px 14px; } }
+.gallery-backdrop { filter: blur(28px) brightness(.55); transform: scale(1.15); }
