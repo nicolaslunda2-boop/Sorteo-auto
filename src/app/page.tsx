@@ -50,7 +50,7 @@ export default async function Home() {
     <>
       <section className="hero">
         <div className="container">
-          <Gallery fotos={FOTOS} caption={SORTEO.auto} />
+          <Gallery fotos={FOTOS} caption={SORTEO.auto} detail={SORTEO.autoDetalle} />
           <div className="certificate">
             <div className="certificate-inner">
               <span className="corner tl" />

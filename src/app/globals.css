@@ -629,3 +629,4 @@ a.prize.extra:hover { border-color: var(--gold-500); }
 .mode-text small { display: block; font-size: .84rem; color: var(--muted); line-height: 1.35; margin-top: 2px; }
 @media (max-width: 800px) { .modes { grid-template-columns: 1fr; gap: 8px; } .mode { padding: 12px 14px; } }
 .gallery-backdrop { filter: blur(28px) brightness(.55); transform: scale(1.15); }
+.gallery-detail { display: block; margin-top: 6px; color: var(--gold-300); font-weight: 600; font-size: .95rem; }

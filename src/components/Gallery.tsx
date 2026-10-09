@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 type Foto = { src: string; alt: string; vertical?: boolean };
 
 /** Galería de fotos del premio: se desliza con el dedo; flechas y miniaturas si hay varias. */
-export function Gallery({ fotos, caption }: { fotos: Foto[]; caption: string }) {
+export function Gallery({ fotos, caption, detail }: { fotos: Foto[]; caption: string; detail?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   if (fotos.length === 0) return null;
@@ -51,6 +51,7 @@ export function Gallery({ fotos, caption }: { fotos: Foto[]; caption: string }) 
         <div className="gallery-caption">
           <span className="kicker">Premio mayor</span>
           <strong>{caption}</strong>
+          {detail && <span className="gallery-detail">{detail}</span>}
         </div>
         {fotos.length > 1 && (
           <>

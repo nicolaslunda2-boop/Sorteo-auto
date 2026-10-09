@@ -6,6 +6,8 @@ export const SORTEO = {
   titulo: "Gran Sorteo",
   subtitulo: "Ganate un Fiat Cronos 2023",
   auto: "Fiat Cronos 2023",
+  // Se muestra debajo del nombre del auto en la galería.
+  autoDetalle: "Caja automática · Con GNC",
   // Fecha y lugar del sorteo (texto libre).
   fecha: "al venderse todos los cartones o el 20 de diciembre, lo que ocurra primero",
   lugar: "Transmisión en vivo por redes sociales",
@@ -42,6 +44,7 @@ export const FOTOS: { src: string; alt: string; vertical?: boolean }[] = [
   { src: "/fotos/06-trasera.jpg", alt: "Parte trasera del Fiat Cronos", vertical: true },
   { src: "/fotos/07-tablero.jpg", alt: "Tablero, pantalla táctil y caja automática" },
   { src: "/fotos/08-asientos.jpg", alt: "Asientos delanteros" },
+  { src: "/fotos/09-asientos-traseros.jpg", alt: "Asientos traseros", vertical: true },
 ];
 
 export const PRECIOS = {
