@@ -16,6 +16,7 @@ type Stats = {
   orders: number;
   conflicts: number;
   pending_transfers: number;
+  held: number;
 };
 type Pending = {
   id: string;
@@ -109,7 +110,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   }
 
   const showAll = params.ver === "todos";
-  const [{ data: stats, error: statsError }, { data: orders }, { data: pending }, { data: referrers }] = await Promise.all([
+  const [{ data: stats, error: statsError }, { data: orders }, { data: pending }, { data: referrers }, heldCodes] = await Promise.all([
     db().rpc("raffle_stats"),
     (() => {
       let q = db()
@@ -128,6 +129,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       .order("created_at")
       .limit(300),
     db().rpc("referral_ranking"),
+    heldTicketCodes(),
   ]);
 
   if (statsError) {
@@ -140,7 +142,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   }
 
   const s = stats as Stats;
-  const available = s.total - s.sold - s.reserved;
+  const available = s.total - s.sold - s.reserved - (s.held ?? 0);
 
   return (
     <Shell>
@@ -160,7 +162,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </strong>
         </div>
         <div className="stat">
-          <small>Disponibles</small>
+          <small>Disponibles online</small>
           <strong>{available.toLocaleString("es-AR")}</strong>
         </div>
         <div className="stat">
@@ -177,6 +179,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       )}
 
       {pending && pending.length > 0 && <PendingTransfers list={pending as Pending[]} />}
+
+      <HeldPanel codes={heldCodes} />
 
       <div className="admin-actions">
         <a className="btn btn-gold" href="/api/admin/export">
@@ -289,6 +293,103 @@ function Referrals({ list }: { list: Referrer[] }) {
             </table>
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+/** Números de los cartones apartados (Supabase entrega de a 1000 filas). */
+async function heldTicketCodes(): Promise<string[]> {
+  const codes: string[] = [];
+  for (let from = 0; from < 6000; from += 1000) {
+    const { data, error } = await db()
+      .from("tickets")
+      .select("code")
+      .eq("status", "held")
+      .order("id")
+      .range(from, from + 999);
+    if (error || !data) break;
+    codes.push(...data.map((t) => t.code as string));
+    if (data.length < 1000) break;
+  }
+  return codes;
+}
+
+function HeldPanel({ codes }: { codes: string[] }) {
+  return (
+    <div className="panel" id="apartados" style={{ marginBottom: 24 }}>
+      <h2>Venta en persona ({codes.length} apartados)</h2>
+      <p className="muted" style={{ marginTop: -6 }}>
+        Los cartones apartados no se venden online (en la web figuran como &quot;Reservado&quot;) y <b>no cuentan como
+        vendidos</b>. Cuando vendas uno en persona, registralo acá con los datos del comprador. Los que no vendas,
+        liberalos antes del sorteo: un cartón apartado sin comprador no participa.
+      </p>
+
+      <div className="held-grid">
+        <form method="post" action="/api/admin/held" className="held-box">
+          <input type="hidden" name="action" value="hold" />
+          <h3>Apartar cartones al azar</h3>
+          <div className="field">
+            <label htmlFor="hold-count">Cantidad</label>
+            <input id="hold-count" name="count" type="number" min={1} max={6000} className="input" required placeholder="Ej: 100" />
+          </div>
+          <button className="btn btn-ghost btn-block" type="submit">
+            Apartar al azar
+          </button>
+        </form>
+
+        <form method="post" action="/api/admin/held" className="held-box">
+          <input type="hidden" name="action" value="sell" />
+          <h3>Registrar venta en persona</h3>
+          <div className="field">
+            <label htmlFor="sell-codes">Cartones vendidos</label>
+            <input id="sell-codes" name="codes" className="input" required placeholder="Ej: A-0012, A-0345" />
+          </div>
+          <div className="field">
+            <label htmlFor="sell-name">Nombre y apellido</label>
+            <input id="sell-name" name="name" className="input" required />
+          </div>
+          <div className="field">
+            <label htmlFor="sell-dni">DNI</label>
+            <input id="sell-dni" name="dni" className="input" inputMode="numeric" required />
+          </div>
+          <div className="field">
+            <label htmlFor="sell-phone">Teléfono / WhatsApp</label>
+            <input id="sell-phone" name="phone" type="tel" className="input" required />
+          </div>
+          <div className="field">
+            <label htmlFor="sell-email">Email (opcional)</label>
+            <input id="sell-email" name="email" type="email" className="input" />
+          </div>
+          <button className="btn btn-gold btn-block" type="submit">
+            Registrar venta
+          </button>
+        </form>
+
+        <form method="post" action="/api/admin/held" className="held-box">
+          <input type="hidden" name="action" value="release" />
+          <h3>Liberar (volver a la venta online)</h3>
+          <div className="field">
+            <label htmlFor="release-codes">Cartones a liberar</label>
+            <input id="release-codes" name="codes" className="input" placeholder="Ej: A-0012, A-0345" />
+          </div>
+          <button className="btn btn-ghost btn-block" type="submit">
+            Liberar estos
+          </button>
+          <button className="btn btn-ghost btn-block" type="submit" name="all" value="1" style={{ marginTop: 8 }}>
+            Liberar todos los apartados
+          </button>
+        </form>
+      </div>
+
+      {codes.length > 0 && (
+        <details className="held-list">
+          <summary>Ver los {codes.length} cartones apartados</summary>
+          <p className="codes-cell">{codes.join(", ")}</p>
+          <a className="btn btn-sm btn-ghost" href="/api/admin/export?tipo=apartados">
+            ⬇ Descargar lista (Excel)
+          </a>
+        </details>
       )}
     </div>
   );

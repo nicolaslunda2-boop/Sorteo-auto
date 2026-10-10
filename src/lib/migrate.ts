@@ -5,7 +5,7 @@ import { Client } from "pg";
 import { db, postgresUrls } from "./supabase.ts";
 
 // Subir este número cada vez que cambie supabase/schema.sql (y su función schema_version()).
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 let verified = false;
 

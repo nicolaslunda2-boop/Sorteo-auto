@@ -33,10 +33,29 @@ async function referrals() {
   return csv(rows, "referidos");
 }
 
+/** Lista de cartones apartados para vender en persona. */
+async function held() {
+  const rows = ["Cartón;Estado"];
+  for (let from = 0; from < 6000; from += 1000) {
+    const { data, error } = await db()
+      .from("tickets")
+      .select("code")
+      .eq("status", "held")
+      .order("id")
+      .range(from, from + 999);
+    if (error) return new Response(error.message, { status: 500 });
+    for (const t of data ?? []) rows.push(`${t.code};Apartado (venta en persona)`);
+    if (!data || data.length < 1000) break;
+  }
+  return csv(rows, "apartados");
+}
+
 /** Descarga un archivo para Excel con una fila por cartón vendido. */
 export async function GET(req: Request) {
   if (!(await isAdmin())) return new Response("No autorizado", { status: 401 });
-  if (new URL(req.url).searchParams.get("tipo") === "referidos") return referrals();
+  const tipo = new URL(req.url).searchParams.get("tipo");
+  if (tipo === "referidos") return referrals();
+  if (tipo === "apartados") return held();
 
   const { data, error } = await db()
     .from("orders")

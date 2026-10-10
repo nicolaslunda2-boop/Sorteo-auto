@@ -99,6 +99,18 @@ en `TRANSFERENCIA_HORAS`.)
 
 Desde el panel, tocando el teléfono del comprador, le escribís directo por WhatsApp.
 
+## Venta en persona (cartones apartados)
+
+En `/admin`, sección **Venta en persona**:
+
+1. **Apartar cartones al azar:** poné la cantidad (por ejemplo 1341) y tocá el botón. Esos
+   cartones dejan de venderse online (en la web dicen "Reservado") y **no cuentan como vendidos**.
+2. **Registrar venta en persona:** cuando vendés uno, escribí el número (`A-0012` o `12`, varios
+   separados por coma) y los datos del comprador. Queda vendido, suma a lo recaudado y te da un
+   link para mandarle al comprador, donde descarga sus cartones.
+3. **Liberar:** los que no vendas, liberalos antes del sorteo para que vuelvan a la venta online.
+   Un cartón apartado sin comprador no participa del sorteo.
+
 ## Premios extra
 
 - **10 premios de $100.000 al número de cartón:** el día del sorteo sorteás 10 números de

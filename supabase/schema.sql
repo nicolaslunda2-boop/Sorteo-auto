@@ -52,6 +52,11 @@ create table if not exists public.tickets (
   sold_at        timestamptz
 );
 
+-- 'held' = apartado por el organizador para vender en persona (no se vende online).
+alter table public.tickets drop constraint if exists tickets_status_check;
+alter table public.tickets add constraint tickets_status_check
+  check (status in ('available', 'reserved', 'sold', 'held'));
+
 create index if not exists tickets_status_idx on public.tickets (status);
 create index if not exists tickets_reserved_by_idx on public.tickets (reserved_by);
 create index if not exists tickets_numbers_idx on public.tickets using gin (numbers);
@@ -64,6 +69,7 @@ select
   t.grid,
   case
     when t.status = 'reserved' and t.reserved_until < now() then 'available'
+    when t.status = 'held' then 'reserved'
     else t.status
   end as status
 from public.tickets t;
@@ -284,7 +290,95 @@ create or replace function public.schema_version()
 returns integer
 language sql
 immutable
-as $$ select 2 $$;
+as $$ select 3 $$;
+
+-- ── Cartones apartados para venta en persona ───────────────────────
+-- Aparta al azar N cartones disponibles. No cuentan como vendidos.
+create or replace function public.hold_random_tickets(p_count integer)
+returns integer
+language sql
+as $$
+  with picked as (
+    select id from public.tickets
+     where status = 'available' or (status = 'reserved' and reserved_until < now())
+     order by random()
+     limit greatest(p_count, 0)
+     for update skip locked
+  ), held as (
+    update public.tickets t
+       set status = 'held', reserved_by = null, reserved_until = null, order_id = null
+      from picked where t.id = picked.id
+    returning 1
+  )
+  select count(*)::int from held;
+$$;
+
+-- Devuelve a la venta online los apartados indicados (o todos si p_ids es null).
+create or replace function public.release_held(p_ids integer[] default null)
+returns integer
+language sql
+as $$
+  with r as (
+    update public.tickets set status = 'available'
+     where status = 'held' and (p_ids is null or id = any (p_ids))
+    returning 1
+  )
+  select count(*)::int from r;
+$$;
+
+-- Registra una venta hecha en persona: crea el pedido pagado y marca los cartones vendidos.
+-- Solo acepta cartones apartados o disponibles.
+create or replace function public.sell_in_person(
+  p_ids          integer[],
+  p_name         text,
+  p_dni          text,
+  p_email        text,
+  p_phone        text,
+  p_price_single integer,
+  p_combo_size   integer,
+  p_combo_price  integer
+)
+returns table (order_id uuid, ticket_codes text[], total integer)
+language plpgsql
+as $$
+#variable_conflict use_column
+declare
+  v_ids   integer[];
+  v_codes text[];
+  v_n     integer;
+  v_total integer;
+  v_order uuid;
+begin
+  select array_agg(t.id order by t.id), array_agg(t.code order by t.id)
+    into v_ids, v_codes
+    from (
+      select t.id, t.code from public.tickets t
+       where t.id = any (p_ids)
+         and (t.status in ('held', 'available') or (t.status = 'reserved' and t.reserved_until < now()))
+       for update
+    ) t;
+
+  v_n := coalesce(cardinality(v_ids), 0);
+  if v_n = 0 or v_n <> cardinality(p_ids) then
+    raise exception 'NOT_AVAILABLE';
+  end if;
+
+  v_total := (v_n / p_combo_size) * p_combo_price + (v_n % p_combo_size) * p_price_single;
+
+  insert into public.orders (session_id, buyer_name, buyer_dni, buyer_email, buyer_phone, ticket_ids,
+                             ticket_codes, total, status, payment_method, mp_payment_id, mp_status,
+                             paid_at, ref_code)
+  values ('presencial', p_name, p_dni, p_email, p_phone, v_ids, v_codes, v_total, 'paid', 'presencial',
+          'en persona', 'approved', now(), upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 7)))
+  returning id into v_order;
+
+  update public.tickets
+     set status = 'sold', order_id = v_order, reserved_by = null, reserved_until = null, sold_at = now()
+   where id = any (v_ids);
+
+  return query select v_order, v_codes, v_total;
+end;
+$$;
 
 -- ── Números para el panel de administración ───────────────────────
 create or replace function public.raffle_stats()
@@ -296,6 +390,7 @@ as $$
     'total',     (select count(*) from public.tickets),
     'sold',      (select count(*) from public.tickets where status = 'sold'),
     'reserved',  (select count(*) from public.tickets where status = 'reserved' and reserved_until > now()),
+    'held',      (select count(*) from public.tickets where status = 'held'),
     'revenue',   (select coalesce(sum(total), 0) from public.orders where status in ('paid', 'conflict')),
     'orders',    (select count(*) from public.orders where status = 'paid'),
     'conflicts', (select count(*) from public.orders where status = 'conflict'),
@@ -318,6 +413,9 @@ revoke execute on function public.confirm_order(uuid, text, numeric) from public
 revoke execute on function public.search_favorites(smallint[], integer) from public, anon, authenticated;
 revoke execute on function public.raffle_stats() from public, anon, authenticated;
 revoke execute on function public.referral_ranking() from public, anon, authenticated;
+revoke execute on function public.hold_random_tickets(integer) from public, anon, authenticated;
+revoke execute on function public.release_held(integer[]) from public, anon, authenticated;
+revoke execute on function public.sell_in_person(integer[], text, text, text, text, integer, integer, integer) from public, anon, authenticated;
 revoke execute on function public.referral_count(text) from public, anon, authenticated;
 
 grant execute on function public.release_expired_reservations() to service_role;
@@ -329,6 +427,9 @@ grant execute on function public.raffle_stats() to service_role;
 grant execute on function public.referral_ranking() to service_role;
 grant execute on function public.referral_count(text) to service_role;
 grant execute on function public.schema_version() to service_role;
+grant execute on function public.hold_random_tickets(integer) to service_role;
+grant execute on function public.release_held(integer[]) to service_role;
+grant execute on function public.sell_in_person(integer[], text, text, text, text, integer, integer, integer) to service_role;
 
 -- ── Limpieza automática cada minuto (pg_cron) ─────────────────────
 -- Aunque esto falle, la web igual trata las reservas vencidas como disponibles.

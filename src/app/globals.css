@@ -630,3 +630,13 @@ a.prize.extra:hover { border-color: var(--gold-500); }
 @media (max-width: 800px) { .modes { grid-template-columns: 1fr; gap: 8px; } .mode { padding: 12px 14px; } }
 .gallery-backdrop { filter: blur(28px) brightness(.55); transform: scale(1.15); }
 .gallery-detail { display: block; margin-top: 6px; color: var(--gold-300); font-weight: 600; font-size: .95rem; }
+
+/* ── Venta en persona (admin) ──────────────────────────── */
+.held-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; align-items: start; }
+.held-box { border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px; background: rgba(6,13,34,.45); display: grid; gap: 10px; }
+.held-box h3 { font-size: 1.05rem; margin: 0 0 4px; }
+.held-list { margin-top: 16px; }
+.held-list summary { cursor: pointer; color: var(--gold-300); font-weight: 700; }
+.held-list .codes-cell { max-height: 220px; overflow: auto; font-size: .85rem; line-height: 1.6; }
+.hint { overflow-wrap: anywhere; }
+@media (max-width: 900px) { .held-grid { grid-template-columns: 1fr; } }
